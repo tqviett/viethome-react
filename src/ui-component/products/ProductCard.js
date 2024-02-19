@@ -26,27 +26,12 @@ ShopProductCard.propTypes = {
 };
 
 export default function ShopProductCard({ product }) {
-    const { name, image, price, status, id } = product;
+    const { name, image, price, description, id } = product;
     const navigate = useNavigate();
 
     return (
         <Card onClick={() => navigate(`/products/edit/${id}`)}>
             <Box sx={{ pt: '100%', position: 'relative' }}>
-                {status && (
-                    <Label
-                        variant="filled"
-                        color={(status === 'sale' && 'error') || 'info'}
-                        sx={{
-                            zIndex: 9,
-                            top: 16,
-                            right: 16,
-                            position: 'absolute',
-                            textTransform: 'uppercase'
-                        }}
-                    >
-                        {status}
-                    </Label>
-                )}
                 <StyledProductImg alt={name} src={image} />
             </Box>
 
@@ -56,7 +41,7 @@ export default function ShopProductCard({ product }) {
                         {name}
                     </Typography>
                 </Link>
-
+                <Typography noWrap>{description}</Typography>
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                     {/* <ColorPreview colors={colors} /> */}
                     <Typography variant="subtitle1">

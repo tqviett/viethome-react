@@ -20,7 +20,7 @@ const ViewProduct = () => {
     return (
         <>
             <Helmet>
-                <title> Dashboard: View Product | KHEO-DYN </title>
+                <title> Dashboard: View Product | viet-home </title>
             </Helmet>
             <Container>
                 <Typography variant="h4" sx={{ mb: 5 }}>

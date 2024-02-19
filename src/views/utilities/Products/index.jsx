@@ -7,7 +7,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { ProductSort, ProductList, ProductCartWidget, ProductFilterSidebar } from 'ui-component/products';
 // mock
 import { useNavigate } from 'react-router-dom';
-import { getDocs, collection, doc } from 'firebase/firestore';
+import { getDocs, collection } from 'firebase/firestore';
 import { firestore } from '../../../firebase';
 import { FIRESTORE } from '../../../constants';
 import { useEffect } from 'react';
@@ -47,7 +47,7 @@ export default function ProductsPage() {
     return (
         <>
             <Helmet>
-                <title> Dashboard: Products | KHEO-DYN </title>
+                <title> Dashboard: Products | viet-home </title>
             </Helmet>
 
             <Container>
