@@ -13,13 +13,12 @@ import { addDoc, collection } from 'firebase/firestore';
 import { FIRESTORE } from '../../../constants';
 import { useNavigate } from 'react-router-dom';
 import { NotificationManager } from 'react-notifications';
+import products from '_mock/products';
 
 const listType = ['DYI', 'Thành phẩm', 'Hoa', 'Thú', 'Gương', 'Khác'];
 const INIT_DATA = {
     name: '',
     price: '',
-    total: '',
-    sold: '',
     type: [],
     note: '',
     category: [],
@@ -33,7 +32,7 @@ const CreateProduct = () => {
     const handleAddCategory = () =>
         setDataForm({
             ...dataForm,
-            category: [...dataForm.category, { id: new Date().getTime(), category: '', color: '', total: 0, sold: 0 }]
+            category: [...dataForm.category, { id: new Date().getTime(), category: '', total: 0, sold: 0, user_id: '' }]
         });
     const handleRemoveCategory = (id) => {
         const newList = [...dataForm.category].filter((item) => item.id !== id);
@@ -168,22 +167,6 @@ const CreateProduct = () => {
                                 label="Tên sản phẩm"
                                 value={dataForm.name}
                                 onChange={(e) => handleChangeInput('name', e.target.value)}
-                            />
-                            <TextField
-                                required
-                                id="quantity"
-                                label="Số lượng"
-                                type="number"
-                                value={dataForm.total}
-                                onChange={(e) => handleChangeInput('total', e.target.value)}
-                            />
-                            <TextField
-                                required
-                                id="quantity"
-                                value={dataForm.sold}
-                                onChange={(e) => handleChangeInput('sold', e.target.value)}
-                                label="Số lượng sản phầm đã bán"
-                                type="number"
                             />
                             <TextField
                                 required

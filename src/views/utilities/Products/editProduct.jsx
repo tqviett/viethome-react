@@ -379,7 +379,7 @@ const EditProduct = () => {
                             endIcon={<Edit />}
                             sx={{ width: 200, marginLeft: 'auto', mt: 3 }}
                         >
-                            Chỉnh sửa sản phẩm
+                            Lưu chỉnh sửa
                         </Button>
                         <Button
                             color="secondary"

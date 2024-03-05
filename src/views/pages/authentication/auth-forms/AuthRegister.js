@@ -39,6 +39,9 @@ import { auth } from '../../../../firebase';
 import { useSelector } from 'react-redux';
 import { NotificationManager } from 'react-notifications';
 import { useNavigate } from 'react-router-dom';
+import { addDoc, collection } from 'firebase/firestore';
+import { firestore } from '../../../../firebase';
+import { FIRESTORE } from '../../../../constants';
 
 // ===========================|| FIREBASE - REGISTER ||=========================== //
 
@@ -54,19 +57,27 @@ const FirebaseRegister = ({ ...others }) => {
     const [strength, setStrength] = useState(0);
     const [level, setLevel] = useState();
 
-    const registerUser = (body) => {
-        createUserWithEmailAndPassword(auth, body?.email, body?.password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-                NotificationManager.success('Đăng kí thành công rồi he!', 'Thông báo');
-                navigate('/login');
-            })
-            .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                console.log(errorCode, errorMessage);
-                NotificationManager.error(errorMessage || 'Đăng kí thất bại rồi he!', 'Thông báo');
-            });
+    const registerUser = async (body) => {
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, body?.email, body?.password);
+            const user = userCredential.user;
+
+            const userData = {
+                id: user.uid,
+                email: user.email,
+                name: `${body.fname} ${body.lname}`
+            };
+
+            await addDoc(collection(firestore, FIRESTORE.USERS), userData);
+
+            NotificationManager.success('Đăng kí thành công rồi he!', 'Thông báo');
+            navigate('/login'); // Chuyển hướng đến trang đăng nhập
+        } catch (error) {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.error(errorCode, errorMessage);
+            NotificationManager.error(errorMessage || 'Đăng kí thất bại rồi he!', 'Thông báo');
+        }
     };
 
     const googleHandler = async () => {
@@ -107,6 +118,8 @@ const FirebaseRegister = ({ ...others }) => {
                 initialValues={{
                     email: '',
                     password: '',
+                    fname: '',
+                    lname: '',
                     submit: null
                 }}
                 validationSchema={Yup.object().shape({
@@ -140,7 +153,8 @@ const FirebaseRegister = ({ ...others }) => {
                                     margin="normal"
                                     name="fname"
                                     type="text"
-                                    defaultValue=""
+                                    value={values.fname}
+                                    onChange={handleChange}
                                     sx={{ ...theme.typography.customInput }}
                                 />
                             </Grid>
@@ -151,7 +165,8 @@ const FirebaseRegister = ({ ...others }) => {
                                     margin="normal"
                                     name="lname"
                                     type="text"
-                                    defaultValue=""
+                                    value={values.lname}
+                                    onChange={handleChange}
                                     sx={{ ...theme.typography.customInput }}
                                 />
                             </Grid>

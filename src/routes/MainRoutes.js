@@ -14,7 +14,10 @@ const EditProducts = Loadable(lazy(() => import('views/utilities/Products/editPr
 const ViewProducts = Loadable(lazy(() => import('views/utilities/Products/viewProduct')));
 const Money = Loadable(lazy(() => import('views/utilities/Money')));
 const EditMoney = Loadable(lazy(() => import('views/utilities/Money/editMoney')));
-
+//utilities routing chat and user
+const Chats = Loadable(lazy(() => import('views/utilities/Chats/chat')));
+const ChatBox = Loadable(lazy(() => import('views/utilities/ChatBox/chatBox')));
+const Users = Loadable(lazy(() => import('views/utilities/Users/user')));
 // sample page routing
 const Orders = Loadable(lazy(() => import('views/utilities/Orders')));
 
@@ -45,7 +48,7 @@ const MainRoutes = {
             element: <EditProducts />
         },
         {
-            path: '/products/1',
+            path: '/products/:id',
             element: <ViewProducts />
         },
         {
@@ -59,6 +62,18 @@ const MainRoutes = {
         {
             path: '/money/edit',
             element: <EditMoney />
+        },
+        {
+            path: '/chats',
+            element: <Chats />
+        },
+        {
+            path: '/chatbox',
+            element: <ChatBox />
+        },
+        {
+            path: '/user',
+            element: <Users />
         }
     ]
 };

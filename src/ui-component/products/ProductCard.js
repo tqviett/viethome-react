@@ -26,38 +26,38 @@ ShopProductCard.propTypes = {
 };
 
 export default function ShopProductCard({ product }) {
-    const { name, image, price, description, id } = product;
+    const { name, image, price, id, category } = product;
     const navigate = useNavigate();
+    const categoryJson = category;
+    let categoryArray;
+    try {
+        categoryArray = JSON.parse(categoryJson);
+    } catch (e) {
+        console.error('Error parsing category JSON:', e);
+        return null;
+    }
+    const categoryObject = categoryArray[0];
+    const sold = categoryObject.sold;
 
     return (
-        <Card onClick={() => navigate(`/products/edit/${id}`)}>
+        <Card onClick={() => navigate(`/products/${id}`)}>
             <Box sx={{ pt: '100%', position: 'relative' }}>
                 <StyledProductImg alt={name} src={image} />
             </Box>
 
             <Stack spacing={2} sx={{ p: 3 }}>
                 <Link color="inherit" underline="hover">
-                    <Typography variant="subtitle2" noWrap>
+                    <Typography variant="subtitle1" noWrap>
                         {name}
                     </Typography>
                 </Link>
-                <Typography noWrap>{description}</Typography>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    {/* <ColorPreview colors={colors} /> */}
-                    <Typography variant="subtitle1">
-                        {/*     <Typography
-                            component="span"
-                            variant="body1"
-                            sx={{
-                                color: 'text.disabled',
-                                textDecoration: 'line-through'
-                            }}
-                        >
-                            {priceSale && fCurrency(priceSale)}
-                        </Typography> */}
-                        {/* &nbsp; */}
-                        {price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} VNĐ
-                    </Typography>
+
+                <Stack direction="row" justifyContent="space-between">
+                    {/* Price */}
+                    <Typography variant="subtitle1">{price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} VNĐ</Typography>
+
+                    {/* Sold */}
+                    <Typography variant="subtitle2">Đã bán: {sold}</Typography>
                 </Stack>
             </Stack>
         </Card>

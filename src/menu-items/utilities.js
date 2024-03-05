@@ -1,11 +1,12 @@
 // assets
-import { IconListCheck, IconMoneybag, IconBuildingStore } from '@tabler/icons';
+import { IconListCheck, IconMoneybag, IconBuildingStore, IconMessageDots } from '@tabler/icons';
 
 // constant
 const icons = {
     IconBuildingStore,
     IconListCheck,
-    IconMoneybag
+    IconMoneybag,
+    IconMessageDots
 };
 
 // ==============================|| UTILITIES MENU ITEMS ||============================== //
@@ -37,6 +38,14 @@ const utilities = {
             type: 'item',
             url: '/money',
             icon: icons.IconMoneybag,
+            breadcrumbs: false
+        },
+        {
+            id: 'chat',
+            title: 'Tin nhắn',
+            type: 'item',
+            url: '/chats',
+            icon: icons.IconMessageDots,
             breadcrumbs: false
         }
     ]
