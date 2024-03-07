@@ -60,13 +60,13 @@ export default function ProductsPage() {
                         Thêm mới sản phẩm
                     </Button>
                     <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>
-                        <ProductFilterSidebar
+                        {/* <ProductFilterSidebar
                             bar
                             openFilter={openFilter}
                             onOpenFilter={handleOpenFilter}
                             onCloseFilter={handleCloseFilter}
                         />
-                        <ProductSort />
+                        <ProductSort /> */}
                     </Stack>
                 </Stack>
 

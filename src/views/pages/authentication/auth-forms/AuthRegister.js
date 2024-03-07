@@ -65,13 +65,19 @@ const FirebaseRegister = ({ ...others }) => {
             const userData = {
                 id: user.uid,
                 email: user.email,
-                name: `${body.fname} ${body.lname}`
+                password: body.password,
+                name: `${body.fname} ${body.lname}`,
+                avatar: '',
+                phone: '',
+                about: '',
+                role: 'user',
+                message: [{ NotificationId: '', number: 0 }]
             };
 
             await addDoc(collection(firestore, FIRESTORE.USERS), userData);
 
             NotificationManager.success('Đăng kí thành công rồi he!', 'Thông báo');
-            navigate('/login'); // Chuyển hướng đến trang đăng nhập
+            navigate('/login');
         } catch (error) {
             const errorCode = error.code;
             const errorMessage = error.message;

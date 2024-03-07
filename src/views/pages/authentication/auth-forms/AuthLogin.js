@@ -39,6 +39,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { NotificationManager } from 'react-notifications';
 import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { firestore } from '../../../../firebase';
 
 // ============================|| FIREBASE - LOGIN ||============================ //
 
@@ -66,13 +68,25 @@ const FirebaseLogin = ({ ...others }) => {
 
     const loginUser = (body) => {
         signInWithEmailAndPassword(auth, body?.email, body?.password)
-            .then((userCredential) => {
+            .then(async (userCredential) => {
                 const user = userCredential.user;
-                dispatch({ type: SET_CURRENT_USER, user });
-                localStorage.setItem('user', JSON.stringify({ user: user.providerData, uid: user.uid }));
-                localStorage.setItem('accessToken', user.accessToken);
-                NotificationManager.success('Đăng nhập thành công!', 'Thông báo');
-                navigate('/dashboard');
+                // Lấy thông tin về người dùng từ Firestore
+                const usersRef = collection(firestore, 'users');
+                const q = query(usersRef, where('email', '==', user.email));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((doc) => {
+                    // Kiểm tra vai trò của người dùng và lưu vào localStorage
+                    const userData = doc.data();
+                    const role = userData.role;
+                    const userInfo = {
+                        ...user.providerData,
+                        id: user.uid, // Đây là uid auth
+                        role: role
+                    };
+                    localStorage.setItem('user', JSON.stringify(userInfo));
+                    dispatch({ type: SET_CURRENT_USER, user });
+                    navigate(role === 'admin' ? '/dashboard' : '/products');
+                });
             })
             .catch((error) => {
                 const errorCode = error.code;
@@ -86,8 +100,8 @@ const FirebaseLogin = ({ ...others }) => {
         <>
             <Formik
                 initialValues={{
-                    email: 'taquocviet262@gmail.com',
-                    password: '111111',
+                    email: 'viet-admin@gmail.com',
+                    password: '123456',
                     submit: null
                 }}
                 validationSchema={Yup.object().shape({
