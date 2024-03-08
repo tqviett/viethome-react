@@ -2,6 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 
 export const ProtectedRoute = ({ children }) => {
     const user = localStorage.getItem('user');
+    const userInfo = user ? JSON.parse(user) : null;
     const { pathname } = useLocation();
     const publicRoute = ['/login', '/register'];
     // admin route [duyệt, users]
@@ -29,5 +30,21 @@ export const ProtectedRoute = ({ children }) => {
         // user is not authenticated
         return <Navigate to="/login" />;
     }
+
+    const role = userInfo?.role;
+    const adminRoutes = ['/dashboard']; // Admin routes
+    const userRoutes = ['/products']; // User routes
+
+    if (role === 'user' && adminRoutes.includes(pathname)) {
+        // User is not allowed to access admin routes, redirect to products
+        return <Navigate to="/products" />;
+    }
+
+    if (role === 'admin' && userRoutes.includes(pathname)) {
+        // Admin is not allowed to access user routes, redirect to dashboard
+        return <Navigate to="/dashboard" />;
+    }
+
     return children;
 };
+ProtectedRoute;

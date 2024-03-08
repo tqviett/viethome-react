@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-
+import { useEffect, useState } from 'react';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import { Box, Drawer, useMediaQuery } from '@mui/material';
@@ -47,32 +47,49 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
     );
 
     const container = window !== undefined ? () => window.document.body : undefined;
+    const [isAdmin, setIsAdmin] = useState(false);
+    useEffect(() => {
+        const fetchUserRole = () => {
+            const userDataString = localStorage.getItem('user');
+            if (userDataString) {
+                const userData = JSON.parse(userDataString);
+                const { role } = userData;
+                setIsAdmin(role === 'admin');
+            }
+        };
 
+        fetchUserRole();
+    }, []);
     return (
-        <Box component="nav" sx={{ flexShrink: { md: 0 }, width: matchUpMd ? drawerWidth : 'auto' }} aria-label="mailbox folders">
-            <Drawer
-                container={container}
-                variant={matchUpMd ? 'persistent' : 'temporary'}
-                anchor="left"
-                open={drawerOpen}
-                onClose={drawerToggle}
-                sx={{
-                    '& .MuiDrawer-paper': {
-                        width: drawerWidth,
-                        background: theme.palette.background.default,
-                        color: theme.palette.text.primary,
-                        borderRight: 'none',
-                        [theme.breakpoints.up('md')]: {
-                            top: '88px'
+        isAdmin && (
+            <Box component="nav" sx={{ flexShrink: { md: 0 }, width: matchUpMd ? drawerWidth : 'auto' }} aria-label="mailbox folders">
+                <Drawer
+                    container={container}
+                    variant={matchUpMd ? 'persistent' : 'temporary'}
+                    anchor="left"
+                    open={drawerOpen}
+                    onClose={() => {
+                        drawerToggle();
+                        handleLeftDrawerToggle(); // Thêm hàm handleLeftDrawerToggle vào trong onClose
+                    }}
+                    sx={{
+                        '& .MuiDrawer-paper': {
+                            width: drawerWidth,
+                            background: theme.palette.background.default,
+                            color: theme.palette.text.primary,
+                            borderRight: 'none',
+                            [theme.breakpoints.up('md')]: {
+                                top: '88px'
+                            }
                         }
-                    }
-                }}
-                ModalProps={{ keepMounted: true }}
-                color="inherit"
-            >
-                {drawer}
-            </Drawer>
-        </Box>
+                    }}
+                    ModalProps={{ keepMounted: true }}
+                    color="inherit"
+                >
+                    {drawer}
+                </Drawer>
+            </Box>
+        )
     );
 };
 

@@ -37,9 +37,9 @@ export default function ProductsPage() {
             });
         });
         setProducts(res);
+
         return res;
     };
-
     useEffect(() => {
         findAll();
     }, []);

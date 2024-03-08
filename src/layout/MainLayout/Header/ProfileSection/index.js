@@ -40,7 +40,7 @@ import { firestore } from '../../../../../src/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 // assets
-import { IconLogout, IconSearch, IconSettings, IconUser } from '@tabler/icons';
+import { IconLogout, IconSearch, IconSettings, IconUser, IconBuildingStore } from '@tabler/icons';
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -49,7 +49,6 @@ const ProfileSection = () => {
     const customization = useSelector((state) => state.customization);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [userName, setUserName] = useState('');
 
     const [sdm, setSdm] = useState(true);
     const [value, setValue] = useState('');
@@ -87,41 +86,26 @@ const ProfileSection = () => {
     };
 
     const prevOpen = useRef(open);
+    const [userName, setUserName] = useState('');
+    const [role, setRole] = useState('');
+
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                // Get the UID of the logged-in user
-                const currentUserUID = localStorage.getItem('user');
-
-                // Get a reference to the document containing the user's data
-                const userDocRef = doc(firestore, 'users', currentUserUID);
-
-                // Fetch the document snapshot
-                const userDocSnapshot = await getDoc(userDocRef);
-
-                if (userDocSnapshot.exists()) {
-                    // Extract the user data from the document snapshot
-                    const userData = userDocSnapshot.data();
-
-                    // Set the user's name in the state
-                    setUserName(userData.name);
-
-                    // Dispatch the user data to Redux store if needed
-                    dispatch({ type: SET_CURRENT_USER, user: userData });
-                } else {
-                    // Handle the case where the user document does not exist
-                    console.error('User document does not exist.');
+        const fetchUserName = () => {
+            const userDataString = localStorage.getItem('user');
+            if (userDataString) {
+                const userData = JSON.parse(userDataString);
+                setUserName(userData.name);
+                const roles = userData.role;
+                if (roles == 'user') {
+                    setRole('Người dùng');
+                } else if (roles == 'admin') {
+                    setRole('Quản trị viên');
                 }
-            } catch (error) {
-                // Handle errors
-                console.error('Error fetching user data:', error);
             }
         };
 
-        fetchUserData();
-    }, [dispatch]);
-
-    console.log('userName:', userName);
+        fetchUserName();
+    }, []);
 
     return (
         <>
@@ -193,66 +177,73 @@ const ProfileSection = () => {
                                     <Box sx={{ p: 2 }}>
                                         <Stack>
                                             <Stack direction="row" spacing={0.5} alignItems="center">
-                                                <Typography variant="h4">Good Morning,</Typography>
+                                                <Typography variant="h4">Xin chào,</Typography>
                                                 <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                                                    abc
+                                                    {userName}
                                                 </Typography>
                                             </Stack>
-                                            <Typography variant="subtitle2">Project Admin</Typography>
+                                            <Typography variant="subtitle2">{role}</Typography>
                                         </Stack>
                                     </Box>
-                                    <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 250px)', overflowX: 'hidden' }}>
-                                        <Box sx={{ p: 2 }}>
-                                            <UpgradePlanCard />
-                                            <Divider />
-
-                                            <List
-                                                component="nav"
-                                                sx={{
-                                                    width: '100%',
-                                                    maxWidth: 350,
-                                                    minWidth: 300,
-                                                    backgroundColor: theme.palette.background.paper,
-                                                    borderRadius: '10px',
-                                                    [theme.breakpoints.down('md')]: {
-                                                        minWidth: '100%'
-                                                    },
-                                                    '& .MuiListItemButton-root': {
-                                                        mt: 0.5
-                                                    }
-                                                }}
+                                    <Box sx={{ p: 2 }}>
+                                        <UpgradePlanCard />
+                                        <Divider />
+                                        <List
+                                            component="nav"
+                                            sx={{
+                                                width: '100%',
+                                                maxWidth: 350,
+                                                minWidth: 300,
+                                                backgroundColor: theme.palette.background.paper,
+                                                borderRadius: '10px',
+                                                [theme.breakpoints.down('md')]: {
+                                                    minWidth: '100%'
+                                                },
+                                                '& .MuiListItemButton-root': {
+                                                    mt: 0.5
+                                                }
+                                            }}
+                                        >
+                                            <ListItemButton
+                                                sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                selected={selectedIndex === 0}
+                                                onClick={(event) => handleListItemClick(event, 0, '/products')}
                                             >
-                                                <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    selected={selectedIndex === 1}
-                                                    onClick={(event) => handleListItemClick(event, 1, '/user')}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconUser stroke={1.5} size="1.3rem" />
-                                                    </ListItemIcon>
-                                                    <ListItemText
-                                                        primary={
-                                                            <Grid container spacing={1} justifyContent="space-between">
-                                                                <Grid item>
-                                                                    <Typography variant="body2">Social Profile</Typography>
-                                                                </Grid>
+                                                <ListItemIcon>
+                                                    <IconBuildingStore stroke={1.5} size="1.3rem" />
+                                                </ListItemIcon>
+                                                <ListItemText primary={<Typography variant="body2">Nhà đang giao bán</Typography>} />
+                                            </ListItemButton>
+                                            <ListItemButton
+                                                sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                selected={selectedIndex === 1}
+                                                onClick={(event) => handleListItemClick(event, 1, '/user')}
+                                            >
+                                                <ListItemIcon>
+                                                    <IconUser stroke={1.5} size="1.3rem" />
+                                                </ListItemIcon>
+                                                <ListItemText
+                                                    primary={
+                                                        <Grid container spacing={1} justifyContent="space-between">
+                                                            <Grid item>
+                                                                <Typography variant="body2">Social Profile</Typography>
                                                             </Grid>
-                                                        }
-                                                    />
-                                                </ListItemButton>
-                                                <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    selected={selectedIndex === 4}
-                                                    onClick={handleLogout}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconLogout stroke={1.5} size="1.3rem" />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant="body2">Đăng xuất</Typography>} />
-                                                </ListItemButton>
-                                            </List>
-                                        </Box>
-                                    </PerfectScrollbar>
+                                                        </Grid>
+                                                    }
+                                                />
+                                            </ListItemButton>
+                                            <ListItemButton
+                                                sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                selected={selectedIndex === 4}
+                                                onClick={handleLogout}
+                                            >
+                                                <ListItemIcon>
+                                                    <IconLogout stroke={1.5} size="1.3rem" />
+                                                </ListItemIcon>
+                                                <ListItemText primary={<Typography variant="body2">Đăng xuất</Typography>} />
+                                            </ListItemButton>
+                                        </List>
+                                    </Box>
                                 </MainCard>
                             </ClickAwayListener>
                         </Paper>

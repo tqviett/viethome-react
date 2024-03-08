@@ -34,7 +34,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 import Google from 'assets/images/icons/social-google.svg';
 import { auth } from '../../../../firebase';
-import { SET_CURRENT_USER } from 'store/actions';
+import { SET_CURRENT_USER, setCurrentUser } from 'store/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { NotificationManager } from 'react-notifications';
 import { useNavigate } from 'react-router-dom';
@@ -78,13 +78,15 @@ const FirebaseLogin = ({ ...others }) => {
                     // Kiểm tra vai trò của người dùng và lưu vào localStorage
                     const userData = doc.data();
                     const role = userData.role;
+                    const name = userData.name;
                     const userInfo = {
                         ...user.providerData,
-                        id: user.uid, // Đây là uid auth
-                        role: role
+                        role: role,
+                        email: user.email,
+                        name: name
                     };
                     localStorage.setItem('user', JSON.stringify(userInfo));
-                    dispatch({ type: SET_CURRENT_USER, user });
+                    dispatch({ type: SET_CURRENT_USER, email: user.email });
                     navigate(role === 'admin' ? '/dashboard' : '/products');
                 });
             })
