@@ -47,7 +47,7 @@ export default function ProductsPage() {
     return (
         <>
             <Helmet>
-                <title> Dashboard: Products | viet-home </title>
+                <title> Dashboard: Products | VIET-HOME </title>
             </Helmet>
 
             <Container>

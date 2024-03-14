@@ -4,7 +4,7 @@ export const ProtectedRoute = ({ children }) => {
     const user = localStorage.getItem('user');
     const userInfo = user ? JSON.parse(user) : null;
     const { pathname } = useLocation();
-    const publicRoute = ['/login', '/register'];
+    const publicRoute = ['/', 'dashboard', '/login', '/register'];
     // admin route [duyệt, users]
     // user route [đổi mật khẩu, bài đăng của tôi, bài đăng đã lưu, chat]
 
@@ -23,7 +23,7 @@ export const ProtectedRoute = ({ children }) => {
     // Check nếu route của admin, role của user thì không cho vào, quay lại route post
     // Ngược lại //
 
-    if (publicRoute.includes(pathname) && !!user) {
+    if (publicRoute.includes(pathname) && user) {
         return <Navigate to="/dashboard" />;
     }
     if (!(publicRoute.includes(pathname) || user)) {
@@ -33,11 +33,11 @@ export const ProtectedRoute = ({ children }) => {
 
     const role = userInfo?.role;
     const adminRoutes = ['/dashboard']; // Admin routes
-    const userRoutes = ['/products']; // User routes
+    const userRoutes = ['/my-products']; // User routes
 
     if (role === 'user' && adminRoutes.includes(pathname)) {
         // User is not allowed to access admin routes, redirect to products
-        return <Navigate to="/products" />;
+        return <Navigate to="/my-products" />;
     }
 
     if (role === 'admin' && userRoutes.includes(pathname)) {

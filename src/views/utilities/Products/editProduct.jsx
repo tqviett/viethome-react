@@ -5,9 +5,11 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
-import { ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { ref, getDownloadURL, uploadBytesResumable, deleteObject } from 'firebase/storage';
 import { storage, firestore } from '../../../firebase';
-import { addDoc, collection, doc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { FIRESTORE } from '../../../constants';
 import { useNavigate, useParams } from 'react-router-dom';
 import { NotificationManager } from 'react-notifications';
@@ -32,6 +34,8 @@ const EditProduct = () => {
     const [loading, setLoading] = useState(false);
     const params = useParams();
     const [openModal, setOpenModal] = useState(false);
+    const [imageFile, setImageFile] = useState(null);
+    const [imageUrl, setImageUrl] = useState('');
 
     const handleAddCategory = () =>
         setDataForm({
@@ -76,95 +80,71 @@ const EditProduct = () => {
         setDataForm(newData);
     };
 
-    const handleSubmit = (e) => {
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                setImageFile(file);
+                setImageUrl(reader.result);
+                try {
+                    const storageRef = ref(storage, `files/${file.name}`);
+                    const uploadTask = uploadBytesResumable(storageRef, file);
+                    await uploadTask;
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    setDataForm({ ...dataForm, image: downloadURL });
+                } catch (error) {
+                    console.error('Error uploading image to storage:', error);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         const { image, ...rest } = dataForm;
-        if (Object.values(rest).filter((x) => !x || !x.length).length > 0 || !image) {
-            NotificationManager.warning('Vui lòng điền đầy đủ các trường!', 'Thông báo');
-            setLoading(false);
-            return;
-        }
 
-        let storageRef, uploadTask;
-        if (image && typeof image === 'string') {
-            storageRef = ref(storage, `files/${image.name}`);
-            uploadTask = uploadBytesResumable(storageRef, image);
-        } else {
+        try {
+            let downloadURL = dataForm.imageUrl;
+
+            if (imageFile) {
+                const storageRef = ref(storage, `files/${imageFile.name}`);
+                const uploadTask = uploadBytesResumable(storageRef, imageFile);
+                await uploadTask;
+                downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            }
+
             const dataBody = {
-                ...dataForm,
+                ...rest,
+                image: downloadURL,
                 description: dataEditor,
                 type: JSON.stringify(dataForm.type),
                 category: JSON.stringify(dataForm.category),
                 updated_at: new Date().valueOf(),
                 deleted_at: ''
             };
+
             const docRef = doc(firestore, FIRESTORE.PRODUCTS, params.id);
-            updateDoc(docRef, dataBody)
-                .then((response) => {
-                    NotificationManager.success('Chỉnh sửa sản phẩm thành công!', 'Thông báo');
-                    navigate('/products');
-                })
-                .catch((err) => {
-                    console.log(err);
-                    NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
-                });
-            return;
+            await updateDoc(docRef, dataBody);
+
+            NotificationManager.success('Chỉnh sửa sản phẩm thành công!', 'Thông báo');
+            navigate('/products');
+        } catch (error) {
+            console.error(error);
+            NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
         }
 
-        let pictureRef = storage.refFromURL(dataForm.imageUrl);
-        pictureRef
-            .delete()
-            .then(() => {
-                console.log('Picture is deleted successfully!');
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-
-        uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-                const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                console.log(progress);
-            },
-            (error) => {
-                console.log(error);
-                NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
-            },
-            () => {
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    const dataBody = {
-                        ...dataForm,
-                        image: downloadURL,
-                        description: dataEditor,
-                        type: typeof dataForm.type === 'string' ? dataForm.type : JSON.stringify(dataForm.type),
-                        category: typeof dataForm.category === 'string' ? dataForm.category : JSON.stringify(dataForm.category),
-                        updated_at: new Date().valueOf(),
-                        deleted_at: ''
-                    };
-                    const docRef = doc(firestore, FIRESTORE.PRODUCTS, params.id);
-                    updateDoc(docRef, dataBody)
-                        .then((response) => {
-                            NotificationManager.success('Chỉnh sửa sản phẩm thành công!', 'Thông báo');
-                            navigate('/products');
-                        })
-                        .catch((err) => {
-                            console.log(err);
-                            NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
-                        });
-                });
-            }
-        );
         setLoading(false);
     };
 
     const ModalConfirm = () => (
         <Dialog onClose={() => setOpenModal(false)} open={openModal} sx={{ padding: '30px !important' }}>
             <IconButton size="large" aria-label="delete" color="error" sx={{ paddingTop: 2 }}>
-                <Delete sx={{ fontSize: 28 }} />
+                <DeleteIcon sx={{ fontSize: 28 }} />
             </IconButton>
-            <DialogTitle sx={{ fontSize: 18 }}>Dương said: Thật sự muốn xóa sản phẩm này à?</DialogTitle>
+            <DialogTitle sx={{ fontSize: 18 }}>Bạn muốn xóa sản phẩm này à?</DialogTitle>
             <Stack spacing={2} paddingBottom={2} paddingTop={2} paddingRight={2} direction="row" justifyContent={'flex-end'}>
                 <Button color="error" variant="contained">
                     Xóa luôn
@@ -179,7 +159,7 @@ const EditProduct = () => {
     return (
         <>
             <Helmet>
-                <title> Dashboard: Edit Product | KHEO-DYN </title>
+                <title> Dashboard: Edit-product | VIET-HOME </title>
             </Helmet>
             <Container>
                 <Typography variant="h4" sx={{ mb: 5 }}>
@@ -209,11 +189,13 @@ const EditProduct = () => {
                             borderRadius: 1
                         }}
                     >
+                        <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
                         <img
                             alt="product-img"
-                            style={{ maxWidth: 300 }}
+                            style={{ maxWidth: 300, cursor: 'pointer' }}
                             height={300}
-                            src={dataForm.image ? URL.createObjectURL(dataForm.image) : dataForm.imageUrl}
+                            src={imageUrl || dataForm.imageUrl}
+                            onClick={() => document.querySelector('input[type="file"]').click()}
                         />
                     </Stack>
                     <Stack
@@ -238,26 +220,9 @@ const EditProduct = () => {
                             />
                             <TextField
                                 required
-                                id="quantity"
-                                label="Số lượng"
-                                type="number"
-                                value={dataForm.total}
-                                onChange={(e) => handleChangeInput('total', e.target.value)}
-                            />
-                            <TextField
-                                required
-                                id="quantity"
-                                value={dataForm.sold}
-                                onChange={(e) => handleChangeInput('sold', e.target.value)}
-                                label="Số lượng sản phầm đã bán"
-                                type="number"
-                            />
-                            <TextField
-                                required
                                 id="price"
                                 label="Giá sản phẩm"
                                 type="number"
-                                defaultValue={299000}
                                 value={dataForm.price}
                                 onChange={(e) => handleChangeInput('price', e.target.value)}
                                 helperText={`${(dataForm.price || 0).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} VNĐ`}

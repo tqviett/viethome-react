@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 // @mui
-import { Box, Card, Link, Typography, Stack } from '@mui/material';
+import { Box, Card, Link, Typography, Stack, ImageList, ImageListItem } from '@mui/material';
 import { styled } from '@mui/material/styles';
 // utils
 import { fCurrency } from 'utils/formatNumber';
@@ -26,8 +26,24 @@ ShopProductCard.propTypes = {
 };
 
 export default function ShopProductCard({ product }) {
-    const { name, image, price, id, category } = product;
+    const { name, images, price, id, category } = product;
     const navigate = useNavigate();
+
+    // Function to render single image or array of images
+    const renderImages = () => {
+        if (Array.isArray(images) && images.length > 0) {
+            // Check if images is an array and not empty
+            return (
+                <Box sx={{ pt: '100%', position: 'relative' }}>
+                    <StyledProductImg src={images[0]} alt={name} />;
+                </Box>
+            );
+        } else {
+            return null; // Handle other cases or return a default image
+        }
+    };
+
+    // Parsing and rendering category data
     const categoryJson = category;
     let categoryArray;
     try {
@@ -40,10 +56,8 @@ export default function ShopProductCard({ product }) {
     const sold = categoryObject.sold;
 
     return (
-        <Card onClick={() => navigate(`/products/${id}`)}>
-            <Box sx={{ pt: '100%', position: 'relative' }}>
-                <StyledProductImg alt={name} src={image} />
-            </Box>
+        <Card onClick={() => navigate(`/product/${id}`)}>
+            {renderImages()}
 
             <Stack spacing={2} sx={{ p: 3 }}>
                 <Link color="inherit" underline="hover">
@@ -54,7 +68,7 @@ export default function ShopProductCard({ product }) {
 
                 <Stack direction="row" justifyContent="space-between">
                     {/* Price */}
-                    <Typography variant="subtitle1">{price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} VNĐ</Typography>
+                    <Typography variant="subtitle1">{fCurrency(price)} VNĐ</Typography>
 
                     {/* Sold */}
                     <Typography variant="subtitle2">Đã bán: {sold}</Typography>

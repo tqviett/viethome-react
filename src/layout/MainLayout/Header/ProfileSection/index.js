@@ -26,21 +26,16 @@ import {
     Switch,
     Typography
 } from '@mui/material';
-
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
-import UpgradePlanCard from './UpgradePlanCard';
 import User1 from 'assets/images/users/user-round.svg';
 import { SET_CURRENT_USER } from 'store/actions';
-import { firestore } from '../../../../../src/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-
 // assets
-import { IconLogout, IconSearch, IconSettings, IconUser, IconBuildingStore } from '@tabler/icons';
+import { IconLogout, IconSearch, IconSettings, IconUser, IconBuildingStore, IconHeart } from '@tabler/icons';
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -88,7 +83,7 @@ const ProfileSection = () => {
     const prevOpen = useRef(open);
     const [userName, setUserName] = useState('');
     const [role, setRole] = useState('');
-
+    const [isAdmin, setIsAdmin] = useState(false);
     useEffect(() => {
         const fetchUserName = () => {
             const userDataString = localStorage.getItem('user');
@@ -96,6 +91,7 @@ const ProfileSection = () => {
                 const userData = JSON.parse(userDataString);
                 setUserName(userData.name);
                 const roles = userData.role;
+                setIsAdmin(roles === 'admin');
                 if (roles == 'user') {
                     setRole('Người dùng');
                 } else if (roles == 'admin') {
@@ -134,7 +130,7 @@ const ProfileSection = () => {
                         src={User1}
                         sx={{
                             ...theme.typography.mediumAvatar,
-                            margin: '8px 0 8px 8px !important',
+                            margin: '8px -16px 8px 8px !important',
                             cursor: 'pointer'
                         }}
                         ref={anchorRef}
@@ -143,7 +139,6 @@ const ProfileSection = () => {
                         color="inherit"
                     />
                 }
-                label={<IconSettings stroke={1.5} size="1.5rem" color={theme.palette.primary.main} />}
                 variant="outlined"
                 ref={anchorRef}
                 aria-controls={open ? 'menu-list-grow' : undefined}
@@ -186,52 +181,67 @@ const ProfileSection = () => {
                                         </Stack>
                                     </Box>
                                     <Box sx={{ p: 2 }}>
-                                        <UpgradePlanCard />
                                         <Divider />
                                         <List
                                             component="nav"
                                             sx={{
                                                 width: '100%',
-                                                maxWidth: 350,
-                                                minWidth: 300,
+                                                maxWidth: 250,
+                                                minWidth: 200,
                                                 backgroundColor: theme.palette.background.paper,
                                                 borderRadius: '10px',
                                                 [theme.breakpoints.down('md')]: {
-                                                    minWidth: '100%'
+                                                    minWidth: 'auto'
                                                 },
                                                 '& .MuiListItemButton-root': {
                                                     mt: 0.5
                                                 }
                                             }}
                                         >
-                                            <ListItemButton
-                                                sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                selected={selectedIndex === 0}
-                                                onClick={(event) => handleListItemClick(event, 0, '/products')}
-                                            >
-                                                <ListItemIcon>
-                                                    <IconBuildingStore stroke={1.5} size="1.3rem" />
-                                                </ListItemIcon>
-                                                <ListItemText primary={<Typography variant="body2">Nhà đang giao bán</Typography>} />
-                                            </ListItemButton>
-                                            <ListItemButton
-                                                sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                selected={selectedIndex === 1}
-                                                onClick={(event) => handleListItemClick(event, 1, '/user')}
-                                            >
-                                                <ListItemIcon>
-                                                    <IconUser stroke={1.5} size="1.3rem" />
-                                                </ListItemIcon>
-                                                <ListItemText
-                                                    primary={
-                                                        <Grid container spacing={1} justifyContent="space-between">
-                                                            <Grid item>
-                                                                <Typography variant="body2">Social Profile</Typography>
-                                                            </Grid>
-                                                        </Grid>
-                                                    }
-                                                />
-                                            </ListItemButton>
+                                            {!isAdmin && (
+                                                <>
+                                                    <ListItemButton
+                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                        selected={selectedIndex === 0}
+                                                        onClick={(event) => handleListItemClick(event, 0, '/user')}
+                                                    >
+                                                        <ListItemIcon>
+                                                            <IconUser stroke={1.5} size="1.3rem" />
+                                                        </ListItemIcon>
+                                                        <ListItemText
+                                                            primary={
+                                                                <Grid container spacing={1} justifyContent="space-between">
+                                                                    <Grid item>
+                                                                        <Typography variant="body2">Thông tin cá nhân</Typography>
+                                                                    </Grid>
+                                                                </Grid>
+                                                            }
+                                                        />
+                                                    </ListItemButton>
+                                                    <ListItemButton
+                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                        selected={selectedIndex === 1}
+                                                        onClick={(event) => handleListItemClick(event, 1, '/my-products')}
+                                                    >
+                                                        <ListItemIcon>
+                                                            <IconBuildingStore stroke={1.5} size="1.3rem" />
+                                                        </ListItemIcon>
+                                                        <ListItemText
+                                                            primary={<Typography variant="body2">Nhà đang giao bán</Typography>}
+                                                        />
+                                                    </ListItemButton>
+                                                    <ListItemButton
+                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                        selected={selectedIndex === 1}
+                                                        onClick={(event) => handleListItemClick(event, 2, '/favorites')}
+                                                    >
+                                                        <ListItemIcon>
+                                                            <IconHeart stroke={1.5} size="1.3rem" />
+                                                        </ListItemIcon>
+                                                        <ListItemText primary={<Typography variant="body2">Tin đã lưu</Typography>} />
+                                                    </ListItemButton>
+                                                </>
+                                            )}
                                             <ListItemButton
                                                 sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                 selected={selectedIndex === 4}

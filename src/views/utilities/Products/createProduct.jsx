@@ -1,12 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Stack, Typography, Button, IconButton, Box, TextField, Autocomplete } from '@mui/material';
+import {
+    Container,
+    Stack,
+    Typography,
+    Button,
+    IconButton,
+    Box,
+    TextField,
+    Autocomplete,
+    ImageList,
+    ImageListItem,
+    Dialog
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import { storage, firestore } from '../../../firebase';
 import { addDoc, collection } from 'firebase/firestore';
@@ -14,93 +27,169 @@ import { FIRESTORE } from '../../../constants';
 import { useNavigate } from 'react-router-dom';
 import { NotificationManager } from 'react-notifications';
 import products from '_mock/products';
+import MobileStepper from '@mui/material/MobileStepper';
+import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import { styled, useTheme } from '@mui/material/styles';
 
-const listType = ['DYI', 'Thành phẩm', 'Hoa', 'Thú', 'Gương', 'Khác'];
+import { districtApi, wardApi } from 'api/clients/provinceService';
+const listType = ['Phòng trọ', 'Nhà trọ', 'Văn phòng'];
 const INIT_DATA = {
     name: '',
     price: '',
-    type: [],
+    area: '',
+    total: '',
+    type: '',
     note: '',
+    favorite: 'false',
+    status: 'Pending',
     category: [],
     description: '',
-    image: ''
+    images: []
 };
+const StyledProductImg = styled('img')({
+    top: 0,
+    width: 80,
+    height: 80,
+    objectFit: 'cover',
+    position: 'absolute'
+});
 
 const CreateProduct = () => {
     const [dataForm, setDataForm] = useState(INIT_DATA);
     const [loading, setLoading] = useState(false);
-    const handleAddCategory = () =>
-        setDataForm({
-            ...dataForm,
-            category: [...dataForm.category, { id: new Date().getTime(), category: '', total: 0, sold: 0, user_id: '' }]
-        });
-    const handleRemoveCategory = (id) => {
-        const newList = [...dataForm.category].filter((item) => item.id !== id);
-        setDataForm({ ...dataForm, category: newList });
-    };
     const navigate = useNavigate();
+    const theme = useTheme();
+    const [activeStep, setActiveStep] = React.useState(0);
+    const [district, setDistrict] = useState([]);
+    const [districtIds, setDistrictIds] = useState();
+    const [ward, setWard] = useState([]);
+
+    useEffect(() => {
+        const fetchPublicDistrict = async () => {
+            const response = await districtApi();
+            if (response.status === 200) {
+                const dataDistrict = response.data;
+                const districts = dataDistrict.results.map((district) => ({
+                    id: district.district_id,
+                    name: district.district_name
+                }));
+                setDistrict(districts);
+            }
+        };
+        fetchPublicDistrict();
+    }, []);
+    useEffect(() => {
+        const fetchPublicWard = async () => {
+            const response = await wardApi(districtIds);
+            if (response.status === 200) {
+                const dataWard = response.data;
+                const wards = dataWard.results.map((ward) => ({
+                    id: ward.ward_id,
+                    name: ward.ward_name
+                }));
+                setWard(wards);
+            }
+        };
+        ward && fetchPublicWard(districtIds);
+    }, [districtIds]);
 
     const handleChangeInput = (key, value) => {
         const newData = { ...dataForm };
         if (key?.includes('category')) {
             const newCategory = [...dataForm.category];
-            newCategory[key[2]][key[1]] = value;
+            if (key[1] === 'district') {
+                // Lưu chỉ tên quận/huyện vào category
+                newCategory[key[2]][key[1]] = value.name;
+            } else {
+                // Lưu bình thường cho ward và location
+                newCategory[key[2]][key[1]] = value;
+            }
             newData.category = newCategory;
         } else newData[key] = value;
+        if (key[1] === 'district') {
+            if (value && value.id) {
+                setDistrictIds(value.id);
+            }
+        }
         setDataForm(newData);
     };
 
-    const handleSubmit = (e) => {
+    const handleAddCategory = () =>
+        setDataForm({
+            ...dataForm,
+            category: [...dataForm.category, { id: new Date().getTime(), district: '', ward: '', user_id: '' }]
+        });
+    const handleRemoveCategory = (id) => {
+        const newList = [...dataForm.category].filter((item) => item.id !== id);
+        setDataForm({ ...dataForm, category: newList });
+    };
+
+    const handleChangeImages = (e) => {
+        const newImages = Array.from(e.target.files);
+        setDataForm({ ...dataForm, images: [...dataForm.images, ...newImages] });
+    };
+    const handleRemoveImage = (index) => {
+        const updatedImages = [...dataForm.images];
+        updatedImages.splice(index, 1);
+        setDataForm({ ...dataForm, images: updatedImages });
+    };
+    const handleRemoveAllImages = () => {
+        setDataForm({ ...dataForm, images: [] });
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const { image, ...rest } = dataForm;
-        if (Object.values(rest).filter((x) => !x || !x.length).length > 0 || !image) {
+        if (
+            !dataForm.name ||
+            !dataForm.total ||
+            !dataForm.price ||
+            !dataForm.area ||
+            !dataForm.note ||
+            !dataForm.description ||
+            !dataForm.category.every((category) => category.district && category.ward && category.location)
+        ) {
+            // Thông báo lỗi
             NotificationManager.warning('Vui lòng điền đầy đủ các trường!', 'Thông báo');
             setLoading(false);
             return;
         }
 
-        const storageRef = ref(storage, `files/${image.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, image);
+        // Upload các ảnh lên Firebase Storage và lấy các đường dẫn download URL
+        const uploadTasks = dataForm.images.map((image) => {
+            const storageRef = ref(storage, `files/${image.name}`);
+            return uploadBytesResumable(storageRef, image);
+        });
 
-        uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-                const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                console.log(progress);
-            },
-            (error) => {
-                console.log(error);
-                NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
-            },
-            () => {
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    const dataBody = {
-                        ...dataForm,
-                        image: downloadURL,
-                        type: JSON.stringify(dataForm.type),
-                        category: JSON.stringify(dataForm.category),
-                        created_at: new Date().valueOf(),
-                        updated_at: new Date().valueOf(),
-                        deleted_at: ''
-                    };
-                    addDoc(collection(firestore, FIRESTORE.PRODUCTS), dataBody)
-                        .then((response) => {
-                            console.log(response);
-                            setDataForm(INIT_DATA);
-                            NotificationManager.success('Tạo mới sản phẩm thành công!', 'Thông báo');
-                            navigate('/products');
-                        })
-                        .catch((err) => {
-                            console.log(err);
-                            NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
-                        });
-                });
-            }
-        );
-        setLoading(false);
+        try {
+            const uploadSnapshots = await Promise.all(uploadTasks);
+            const downloadURLs = await Promise.all(uploadSnapshots.map((snapshot) => getDownloadURL(snapshot.ref)));
+
+            // Tạo dữ liệu sản phẩm với các đường dẫn download URL của ảnh
+            const dataBody = {
+                ...dataForm,
+                images: downloadURLs,
+                category: JSON.stringify(dataForm.category),
+                created_at: new Date().valueOf(),
+                updated_at: new Date().valueOf(),
+                deleted_at: ''
+            };
+
+            // Thêm dữ liệu sản phẩm vào Firestore
+            await addDoc(collection(firestore, FIRESTORE.PRODUCTS), dataBody);
+
+            // Đặt lại form và thông báo thành công
+            setDataForm(INIT_DATA);
+            NotificationManager.success('Tạo mới sản phẩm thành công!', 'Thông báo');
+            navigate('/products');
+        } catch (error) {
+            console.log(error);
+            NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
+        } finally {
+            setLoading(false);
+        }
     };
-
     return (
         <>
             <Helmet>
@@ -124,30 +213,67 @@ const CreateProduct = () => {
                     justifyContent="space-between"
                 >
                     <Stack
-                        direction="row"
-                        justifyContent="center"
-                        alignItems="center"
                         sx={{
-                            width: 300,
-                            height: 300,
-                            boxShadow: 'rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px',
-                            borderRadius: 1
+                            display: 'flex'
                         }}
                     >
-                        {!dataForm.image ? (
+                        <Stack
+                            direction="row"
+                            justifyContent="center"
+                            alignItems="center"
+                            sx={{
+                                width: 300,
+                                height: 150,
+                                boxShadow: 'rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px',
+                                borderRadius: 1,
+                                mb: 2
+                            }}
+                        >
                             <IconButton color="secondary" aria-label="upload picture" component="label">
-                                <input
-                                    hidden
-                                    accept="image/*"
-                                    type="file"
-                                    onChange={(e) => handleChangeInput('image', e.target.files[0])}
-                                />
+                                <input hidden accept="image/*" type="file" onChange={handleChangeImages} multiple />
                                 <PhotoCamera sx={{ fontSize: 42 }} />
                             </IconButton>
-                        ) : (
-                            <img alt="product-img" style={{ maxWidth: 300 }} height={300} src={URL.createObjectURL(dataForm.image)} />
-                        )}
+                        </Stack>
+
+                        <Stack
+                            direction="row"
+                            justifyContent="center"
+                            alignItems="center"
+                            sx={{
+                                width: 300,
+                                height: 'auto'
+                            }}
+                        >
+                            {dataForm.images.length > 0 && (
+                                <Box sx={{ width: '100%' }}>
+                                    <ImageList cols={3} rowHeight={100} sx={{ overflowY: 'auto' }}>
+                                        {dataForm.images.map((image, index) => (
+                                            <Box key={index} sx={{ position: 'relative' }}>
+                                                <ImageListItem>
+                                                    <StyledProductImg src={URL.createObjectURL(image)} alt={`product-img-${index}`} />
+                                                </ImageListItem>
+                                                <IconButton
+                                                    sx={{ position: 'absolute', top: 2, right: 2 }}
+                                                    onClick={() => handleRemoveImage(index)}
+                                                >
+                                                    <HighlightOffIcon />
+                                                </IconButton>
+                                            </Box>
+                                        ))}
+                                    </ImageList>
+                                    <Button
+                                        sx={{ mt: 1, fontSize: 10 }}
+                                        variant="contained"
+                                        color="secondary"
+                                        onClick={handleRemoveAllImages}
+                                    >
+                                        Remove All
+                                    </Button>
+                                </Box>
+                            )}
+                        </Stack>
                     </Stack>
+
                     <Stack
                         sx={{
                             width: '65%'
@@ -170,23 +296,40 @@ const CreateProduct = () => {
                             />
                             <TextField
                                 required
-                                id="price"
-                                label="Giá sản phẩm"
+                                id="quantity"
+                                label="Số lượng có"
                                 type="number"
-                                defaultValue={299000}
-                                value={dataForm.price}
-                                onChange={(e) => handleChangeInput('price', e.target.value)}
-                                helperText={`${(dataForm.price || 0).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} VNĐ`}
+                                value={dataForm.total}
+                                onChange={(e) => handleChangeInput('total', e.target.value)}
                             />
                             <Autocomplete
-                                multiple
                                 id="type2"
                                 options={listType}
                                 value={dataForm.type}
                                 onChange={(e, value) => handleChangeInput('type', value)}
-                                renderInput={(params) => <TextField {...params} label="Loại sản phẩm" placeholder="Phân loại" />}
+                                renderInput={(params) => <TextField {...params} label="Loại:" placeholder="Phân loại" />}
                             />
                             <TextField
+                                required
+                                id="price"
+                                label="Giá sản phẩm"
+                                type="number"
+                                value={dataForm.price}
+                                onChange={(e) => handleChangeInput('price', e.target.value)}
+                                helperText={`${(dataForm.price || 0).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} VNĐ`}
+                            />
+                            <TextField
+                                required
+                                id="area"
+                                value={dataForm.area}
+                                onChange={(e) => handleChangeInput('area', e.target.value)}
+                                label="Diện tích"
+                                type="number"
+                                helperText={`${(dataForm.area || 0).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} m²`}
+                            />
+
+                            <TextField
+                                required
                                 id="note"
                                 label="Ghi chú"
                                 multiline
@@ -195,63 +338,56 @@ const CreateProduct = () => {
                                 onChange={(e) => handleChangeInput('note', e.target.value)}
                             />
                             <Typography variant="h5" sx={{ mb: 1 }}>
-                                Phân loại sản phẩm
+                                Địa Chỉ Nhà:
                             </Typography>
                             {(dataForm.category || [])?.map((item, index) => (
                                 <Box
                                     key={index}
                                     sx={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        gap: 1,
+                                        display: 'grid',
+                                        gridTemplateColumns: '300px 300px auto',
                                         alignItems: 'center',
                                         mb: 2,
+                                        flexWrap: 'wrap',
+                                        gridRowGap: '16px', // Thêm khoảng cách 16px giữa các hàng
+                                        gap: '16px', // Thêm khoảng cách 16px giữa các phần tử
                                         '& .MuiTextField-root': {
                                             mb: 0,
-                                            '&:nth-child(3)': {
-                                                width: 180
+                                            '&:nth-of-type(3)': {
+                                                gridColumn: 'span 2'
                                             },
-                                            '&:nth-child(1)': {
-                                                width: 240
-                                            },
-                                            '&:nth-child(4)': {
-                                                width: 180
+                                            '&:nth-of-type(4)': {
+                                                display: 'flex'
                                             }
                                         }
                                     }}
                                 >
-                                    <TextField
-                                        label="Loại"
-                                        id="category-type"
-                                        value={item.type}
-                                        size="small"
-                                        onChange={(e) => handleChangeInput(['category', 'type', index], e.target.value)}
-                                    />
                                     <Autocomplete
-                                        id="type"
-                                        sx={{ width: 300 }}
+                                        id="district"
                                         size="small"
-                                        options={listType}
-                                        value={item.category}
-                                        onChange={(e, value) => handleChangeInput(['category', 'category', index], value)}
-                                        renderInput={(params) => <TextField {...params} label="Loại sản phẩm" placeholder="Phân loại" />}
+                                        options={district}
+                                        getOptionLabel={(option) => (option ? option.name : '')}
+                                        onChange={(e, value) => handleChangeInput(['category', 'district', index], value)}
+                                        renderInput={(params) => <TextField {...params} label="Quận/Huyện" placeholder="Phân loại" />}
+                                    />
+
+                                    <Autocomplete
+                                        id="ward"
+                                        size="small"
+                                        options={ward}
+                                        getOptionLabel={(option) => (option ? option.name : '')}
+                                        onChange={(e, value) => handleChangeInput(['category', 'ward', index], value.name)}
+                                        renderInput={(params) => <TextField {...params} label="Phường/Xã/Thị xã" placeholder="Phân loại" />}
                                     />
                                     <TextField
-                                        label="Số lượng"
-                                        id="category-number"
-                                        type="number"
-                                        onChange={(e) => handleChangeInput(['category', 'total', index], e.target.value)}
-                                        value={item.total}
+                                        required
+                                        label="Chi tiết"
+                                        id="location"
+                                        value={item.location || ''} // Ensure a default value if item.location is undefined or null
                                         size="small"
+                                        onChange={(e) => handleChangeInput(['category', 'location', index], e.target.value)}
                                     />
-                                    <TextField
-                                        label="Đã bán"
-                                        id="category-number"
-                                        type="number"
-                                        onChange={(e) => handleChangeInput(['category', 'sold', index], e.target.value)}
-                                        value={item.sold}
-                                        size="small"
-                                    />
+
                                     <RemoveCircleIcon
                                         onClick={() => handleRemoveCategory(item.id)}
                                         color="secondary"
@@ -266,7 +402,7 @@ const CreateProduct = () => {
                                 variant="contained"
                                 endIcon={<AddCircleIcon />}
                             >
-                                Thêm loại
+                                Thêm địa chỉ
                             </Button>
 
                             <CKEditor
