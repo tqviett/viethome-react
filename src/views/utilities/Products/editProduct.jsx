@@ -1,53 +1,126 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Stack, Typography, Button, Box, TextField, Autocomplete, Dialog, DialogTitle, IconButton } from '@mui/material';
+import {
+    Container,
+    Stack,
+    Typography,
+    Button,
+    Box,
+    TextField,
+    Autocomplete,
+    Dialog,
+    DialogTitle,
+    IconButton,
+    ImageList,
+    ImageListItem
+} from '@mui/material';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { ref, getDownloadURL, uploadBytesResumable, deleteObject } from 'firebase/storage';
 import { storage, firestore } from '../../../firebase';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, collection } from 'firebase/firestore';
 import { FIRESTORE } from '../../../constants';
 import { useNavigate, useParams } from 'react-router-dom';
 import { NotificationManager } from 'react-notifications';
 import { Delete, Edit } from '@mui/icons-material';
+import { styled, useTheme } from '@mui/material/styles';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
-const listType = ['DYI', 'Thành phẩm', 'Hoa', 'Thú', 'Gương', 'Khác'];
+//API functions
+import { districtApi, wardApi } from 'api/clients/provinceService';
+
+const listType = ['Phòng trọ', 'Nhà trọ', 'Văn phòng'];
 const INIT_DATA = {
     name: '',
     price: '',
+    area: '',
     total: '',
-    sold: '',
-    type: [],
+    type: '',
     note: '',
+    favorite: 'false',
+    status: 'Pending',
     category: [],
     description: '',
-    image: ''
+    images: []
 };
-
+const StyledProductImg = styled('img')({
+    top: 0,
+    width: 80,
+    height: 80,
+    objectFit: 'cover',
+    position: 'absolute'
+});
 const EditProduct = () => {
     const [dataForm, setDataForm] = useState(INIT_DATA);
     const [dataEditor, setDataEditor] = useState('');
     const [loading, setLoading] = useState(false);
     const params = useParams();
     const [openModal, setOpenModal] = useState(false);
-    const [imageFile, setImageFile] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
+    const [district, setDistrict] = useState([]);
+    const [districtIds, setDistrictIds] = useState();
+    const [ward, setWard] = useState([]);
 
-    const handleAddCategory = () =>
-        setDataForm({
-            ...dataForm,
-            category: [...dataForm.category, { id: new Date().getTime(), category: '', color: '', total: 0, sold: 0 }]
-        });
-    const handleRemoveCategory = (id) => {
-        const newList = [...dataForm.category].filter((item) => item.id !== id);
-        setDataForm({ ...dataForm, category: newList });
+    // USEEFFECT
+    useEffect(() => {
+        if (params?.id) findProduct();
+    }, [params]);
+    useEffect(() => {
+        const fetchPublicDistrict = async () => {
+            const response = await districtApi();
+            if (response.status === 200) {
+                const dataDistrict = response.data;
+                const districts = dataDistrict.results.map((district) => ({
+                    id: district.district_id,
+                    name: district.district_name
+                }));
+                setDistrict(districts);
+            }
+        };
+        fetchPublicDistrict();
+    }, [districtIds]);
+
+    useEffect(() => {
+        const fetchPublicWard = async () => {
+            const response = await wardApi(districtIds);
+            if (response.status === 200) {
+                const dataWard = response.data;
+                const wards = dataWard.results.map((ward) => ({
+                    id: ward.ward_id,
+                    name: ward.ward_name
+                }));
+                setWard(wards);
+            }
+        };
+        districtIds && fetchPublicWard(districtIds);
+    }, [districtIds]);
+
+    //Function
+
+    const handleChangeInput = (key, value) => {
+        const newData = { ...dataForm };
+        if (key?.includes('category')) {
+            const newCategory = [...dataForm.category];
+            if (key[1] === 'district') {
+                // Lưu chỉ tên quận/huyện vào category
+                newCategory[key[2]][key[1]] = value ? value.name : ''; // Lưu giá trị name của tùy chọn
+            } else {
+                // Lưu bình thường cho ward và location
+                newCategory[key[2]][key[1]] = value;
+            }
+            newData.category = newCategory;
+        } else newData[key] = value;
+        if (key[1] === 'district') {
+            if (value && value.id) {
+                setDistrictIds(value.id);
+            }
+        }
+        setDataForm(newData);
     };
-    const navigate = useNavigate();
-
     const findProduct = async () => {
         const snap = await getDoc(doc(firestore, FIRESTORE.PRODUCTS, params.id));
         if (snap.exists()) {
@@ -55,89 +128,140 @@ const EditProduct = () => {
             setDataEditor(dataProduct.description);
             setDataForm({
                 ...dataProduct,
-                image: '',
-                imageUrl: dataProduct.image,
+                images: dataProduct.images,
                 id: params.id,
-                category: JSON.parse(dataProduct.category),
-                type: JSON.parse(dataProduct.type)
+                category: JSON.parse(dataProduct.category)
             });
         } else {
             console.log('No such document');
         }
     };
 
-    useEffect(() => {
-        if (params?.id) findProduct();
-    }, [params]);
+    const handleAddCategory = () =>
+        setDataForm({
+            ...dataForm,
+            category: [...dataForm.category, { id: new Date().getTime(), district: '', ward: '', user_id: '' }]
+        });
 
-    const handleChangeInput = (key, value) => {
-        const newData = { ...dataForm };
-        if (key?.includes('category')) {
-            const newCategory = [...dataForm.category];
-            newCategory[key[2]][key[1]] = value;
-            newData.category = newCategory;
-        } else newData[key] = value;
-        setDataForm(newData);
+    const handleRemoveCategory = (id) => {
+        const newList = [...dataForm.category].filter((item) => item.id !== id);
+        setDataForm({ ...dataForm, category: newList });
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                setImageFile(file);
-                setImageUrl(reader.result);
-                try {
-                    const storageRef = ref(storage, `files/${file.name}`);
-                    const uploadTask = uploadBytesResumable(storageRef, file);
-                    await uploadTask;
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    setDataForm({ ...dataForm, image: downloadURL });
-                } catch (error) {
-                    console.error('Error uploading image to storage:', error);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
+    const navigate = useNavigate();
+
+    const handleRemoveImage = (index) => {
+        const updatedImages = [...dataForm.images];
+        updatedImages.splice(index, 1);
+        setDataForm({ ...dataForm, images: updatedImages });
     };
 
+    const handleRemoveAllImages = () => {
+        setDataForm({ ...dataForm, images: [] });
+    };
+    const handleChangeImages = (e) => {
+        const newImages = Array.from(e.target.files);
+        setDataForm({ ...dataForm, images: [...dataForm.images, ...newImages] });
+    };
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const { image, ...rest } = dataForm;
+
+        const uploadTasks = dataForm.images
+            .filter((image) => image instanceof File)
+            .map((image) => {
+                const storageRef = ref(storage, `files/${image.name}`);
+                return uploadBytesResumable(storageRef, image);
+            });
 
         try {
-            let downloadURL = dataForm.imageUrl;
-
-            if (imageFile) {
-                const storageRef = ref(storage, `files/${imageFile.name}`);
-                const uploadTask = uploadBytesResumable(storageRef, imageFile);
-                await uploadTask;
-                downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            }
+            const uploadSnapshots = await Promise.all(uploadTasks);
+            const downloadURLs = await Promise.all(uploadSnapshots.map((snapshot) => getDownloadURL(snapshot.ref)));
+            const updatedImages = [...dataForm.images.filter((image) => typeof image === 'string'), ...downloadURLs];
 
             const dataBody = {
-                ...rest,
-                image: downloadURL,
-                description: dataEditor,
-                type: JSON.stringify(dataForm.type),
+                ...dataForm,
+                images: updatedImages,
                 category: JSON.stringify(dataForm.category),
                 updated_at: new Date().valueOf(),
                 deleted_at: ''
             };
 
-            const docRef = doc(firestore, FIRESTORE.PRODUCTS, params.id);
-            await updateDoc(docRef, dataBody);
-
-            NotificationManager.success('Chỉnh sửa sản phẩm thành công!', 'Thông báo');
-            navigate('/products');
+            await updateDoc(doc(firestore, FIRESTORE.PRODUCTS, params.id), dataBody);
+            NotificationManager.success('Cập nhật sản phẩm thành công!', 'Thông báo');
+            setDataForm(INIT_DATA);
+            navigate('/my-products');
         } catch (error) {
-            console.error(error);
+            console.log(error);
             NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
+
+    // const handleChangeImages = async (e, setDataForm, dataForm) => {
+    //     const files = e.target.files;
+    //     if (files) {
+    //         const newImages = [];
+    //         const uploadTasks = Array.from(files).map((file) => {
+    //             return new Promise((resolve, reject) => {
+    //                 const reader = new FileReader();
+    //                 reader.onloadend = async () => {
+    //                     try {
+    //                         const storageRef = ref(storage, `files/${file.name}`);
+    //                         const uploadTask = uploadBytesResumable(storageRef, file);
+    //                         await uploadTask;
+    //                         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+    //                         newImages.push(downloadURL);
+    //                         resolve();
+    //                     } catch (error) {
+    //                         reject(error);
+    //                     }
+    //                 };
+    //                 reader.readAsDataURL(file);
+    //             });
+    //         });
+    //         await Promise.all(uploadTasks);
+    //         if (dataForm) {
+    //             setDataForm({ ...dataForm, images: [...dataForm.images, ...newImages] });
+    //         } else {
+    //             setDataForm({ ...dataForm, images: [...newImages] });
+    //         }
+    //     }
+    // };
+
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+    //     setLoading(true);
+    //     try {
+    //         const dataBody = {
+    //             ...dataForm,
+    //             category: JSON.stringify(dataForm.category),
+    //             updated_at: new Date().valueOf(),
+    //             deleted_at: ''
+    //         };
+    //         await updateDoc(doc(firestore, FIRESTORE.PRODUCTS, dataForm.id), dataBody);
+    //         setDataForm(INIT_DATA);
+    //         NotificationManager.success('Chỉnh sửa sản phẩm thành công!', 'Thông báo');
+    //         navigate('/my-products');
+    //     } catch (error) {
+    //         console.error(error);
+    //         NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+
+    // const handleDeleteProduct = async () => {
+    //     try {
+    //         await deleteDoc(doc(firestore, FIRESTORE.PRODUCTS, params.id));
+    //         NotificationManager.success('Xóa sản phẩm thành công!', 'Thông báo');
+    //         navigate('/products');
+    //     } catch (error) {
+    //         console.error(error);
+    //         NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
+    //     }
+    // };
 
     const ModalConfirm = () => (
         <Dialog onClose={() => setOpenModal(false)} open={openModal} sx={{ padding: '30px !important' }}>
@@ -179,25 +303,77 @@ const EditProduct = () => {
                     justifyContent="space-between"
                 >
                     <Stack
-                        direction="row"
-                        justifyContent="center"
-                        alignItems="center"
                         sx={{
-                            width: 300,
-                            height: 300,
-                            boxShadow: 'rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px',
-                            borderRadius: 1
+                            display: 'flex'
                         }}
                     >
-                        <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
-                        <img
-                            alt="product-img"
-                            style={{ maxWidth: 300, cursor: 'pointer' }}
-                            height={300}
-                            src={imageUrl || dataForm.imageUrl}
-                            onClick={() => document.querySelector('input[type="file"]').click()}
-                        />
+                        <Stack
+                            direction="row"
+                            justifyContent="center"
+                            alignItems="center"
+                            sx={{
+                                width: 300,
+                                height: 150,
+                                boxShadow: 'rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px',
+                                borderRadius: 1,
+                                mb: 2
+                            }}
+                        >
+                            <IconButton color="secondary" aria-label="upload picture" component="label">
+                                <input
+                                    hidden
+                                    accept="image/*"
+                                    type="file"
+                                    onChange={(e) => handleChangeImages(e, setDataForm, dataForm)}
+                                    multiple
+                                />
+                                <PhotoCamera sx={{ fontSize: 42 }} />
+                            </IconButton>
+                        </Stack>
+
+                        <Stack
+                            direction="row"
+                            justifyContent="center"
+                            alignItems="center"
+                            sx={{
+                                width: 300,
+                                height: 'auto'
+                            }}
+                        >
+                            {dataForm.images.length > 0 && (
+                                <Box sx={{ width: '100%' }}>
+                                    <ImageList cols={3} rowHeight={100} sx={{ overflowY: 'auto' }}>
+                                        {dataForm.images.map((image, index) => (
+                                            <Box key={index} sx={{ position: 'relative' }}>
+                                                <ImageListItem>
+                                                    {image instanceof File ? (
+                                                        <StyledProductImg src={URL.createObjectURL(image)} alt={`product-img-${index}`} />
+                                                    ) : (
+                                                        <StyledProductImg src={image} alt={`product-img-${index}`} />
+                                                    )}
+                                                </ImageListItem>
+                                                <IconButton
+                                                    sx={{ position: 'absolute', top: 2, right: 2 }}
+                                                    onClick={() => handleRemoveImage(index)}
+                                                >
+                                                    <HighlightOffIcon />
+                                                </IconButton>
+                                            </Box>
+                                        ))}
+                                    </ImageList>
+                                    <Button
+                                        sx={{ mt: 1, fontSize: 10 }}
+                                        variant="contained"
+                                        color="secondary"
+                                        onClick={handleRemoveAllImages}
+                                    >
+                                        Remove All
+                                    </Button>
+                                </Box>
+                            )}
+                        </Stack>
                     </Stack>
+
                     <Stack
                         sx={{
                             width: '65%'
@@ -220,6 +396,21 @@ const EditProduct = () => {
                             />
                             <TextField
                                 required
+                                id="quantity"
+                                label="Số lượng có"
+                                type="number"
+                                value={dataForm.total}
+                                onChange={(e) => handleChangeInput('total', e.target.value)}
+                            />
+                            <Autocomplete
+                                id="type2"
+                                options={listType}
+                                value={dataForm.type}
+                                onChange={(e, value) => handleChangeInput('type', value)}
+                                renderInput={(params) => <TextField {...params} label="Loại:" placeholder="Phân loại" />}
+                            />
+                            <TextField
+                                required
                                 id="price"
                                 label="Giá sản phẩm"
                                 type="number"
@@ -227,15 +418,18 @@ const EditProduct = () => {
                                 onChange={(e) => handleChangeInput('price', e.target.value)}
                                 helperText={`${(dataForm.price || 0).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} VNĐ`}
                             />
-                            <Autocomplete
-                                multiple
-                                id="type2"
-                                options={listType}
-                                value={dataForm.type}
-                                onChange={(e, value) => handleChangeInput('type', value)}
-                                renderInput={(params) => <TextField {...params} label="Loại sản phẩm" placeholder="Phân loại" />}
-                            />
                             <TextField
+                                required
+                                id="area"
+                                value={dataForm.area}
+                                onChange={(e) => handleChangeInput('area', e.target.value)}
+                                label="Diện tích"
+                                type="number"
+                                helperText={`${(dataForm.area || 0).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} m²`}
+                            />
+
+                            <TextField
+                                required
                                 id="note"
                                 label="Ghi chú"
                                 multiline
@@ -243,63 +437,53 @@ const EditProduct = () => {
                                 value={dataForm.note}
                                 onChange={(e) => handleChangeInput('note', e.target.value)}
                             />
-                            <Typography variant="h5" sx={{ mb: 1 }}>
-                                Phân loại sản phẩm
-                            </Typography>
                             {(dataForm.category || [])?.map((item, index) => (
                                 <Box
                                     key={index}
                                     sx={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        gap: 1,
+                                        display: 'grid',
+                                        gridTemplateColumns: '300px 300px auto',
                                         alignItems: 'center',
                                         mb: 2,
+                                        flexWrap: 'wrap',
+                                        gridRowGap: '16px', // Thêm khoảng cách 16px giữa các hàng
+                                        gap: '16px', // Thêm khoảng cách 16px giữa các phần tử
                                         '& .MuiTextField-root': {
                                             mb: 0,
-                                            '&:nth-child(3)': {
-                                                width: 180
+                                            '&:nth-of-type(3)': {
+                                                gridColumn: 'span 2'
                                             },
-                                            '&:nth-child(1)': {
-                                                width: 240
-                                            },
-                                            '&:nth-child(4)': {
-                                                width: 180
+                                            '&:nth-of-type(4)': {
+                                                display: 'flex'
                                             }
                                         }
                                     }}
                                 >
-                                    <TextField
-                                        label="Loại"
-                                        id="category-type"
-                                        value={item.type}
-                                        size="small"
-                                        onChange={(e) => handleChangeInput(['category', 'type', index], e.target.value)}
-                                    />
                                     <Autocomplete
-                                        id="type"
-                                        sx={{ width: 300 }}
+                                        id="district"
                                         size="small"
-                                        options={listType}
-                                        value={item.category}
-                                        onChange={(e, value) => handleChangeInput(['category', 'category', index], value)}
-                                        renderInput={(params) => <TextField {...params} label="Loại sản phẩm" placeholder="Phân loại" />}
+                                        options={district}
+                                        value={item.district || ''}
+                                        getOptionLabel={(option) => option?.name || item.district} // Sử dụng thuộc tính name để hiển thị
+                                        onChange={(e, value) => handleChangeInput(['category', 'district', index], value)}
+                                        renderInput={(params) => <TextField {...params} label="Quận/Huyện:" />}
+                                    />
+
+                                    <Autocomplete
+                                        id="ward"
+                                        size="small"
+                                        options={ward}
+                                        value={item.ward || ''}
+                                        getOptionLabel={(option) => option?.name || item.ward} // Chỉ trả về thuộc tính "name"
+                                        onChange={(e, value) => handleChangeInput(['category', 'ward', index], value.name)}
+                                        renderInput={(params) => <TextField {...params} label="Phường/Xã/Thị xã:" />}
                                     />
                                     <TextField
-                                        label="Số lượng"
-                                        id="category-number"
-                                        type="number"
-                                        onChange={(e) => handleChangeInput(['category', 'total', index], e.target.value)}
-                                        value={item.total}
+                                        label="Chi tiết:"
+                                        id="location"
+                                        value={item.location || ''} // Ensure a default value if item.location is undefined or null
                                         size="small"
-                                    />
-                                    <TextField
-                                        label="Đã bán"
-                                        id="category-number"
-                                        type="number"
-                                        onChange={(e) => handleChangeInput(['category', 'sold', index], e.target.value)}
-                                        value={item.sold}
-                                        size="small"
+                                        onChange={(e) => handleChangeInput(['category', 'location', index], e.target.value)}
                                     />
                                     <RemoveCircleIcon
                                         onClick={() => handleRemoveCategory(item.id)}
@@ -315,7 +499,7 @@ const EditProduct = () => {
                                 variant="contained"
                                 endIcon={<AddCircleIcon />}
                             >
-                                Thêm loại
+                                Thêm địa chỉ
                             </Button>
 
                             <CKEditor

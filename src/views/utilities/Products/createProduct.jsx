@@ -156,7 +156,7 @@ const CreateProduct = () => {
             return;
         }
 
-        // Upload các ảnh lên Firebase Storage và lấy các đường dẫn download URL
+        // Upload các ảnh lên Storage và lấy các đường dẫn download URL
         const uploadTasks = dataForm.images.map((image) => {
             const storageRef = ref(storage, `files/${image.name}`);
             return uploadBytesResumable(storageRef, image);
@@ -337,9 +337,6 @@ const CreateProduct = () => {
                                 value={dataForm.note}
                                 onChange={(e) => handleChangeInput('note', e.target.value)}
                             />
-                            <Typography variant="h5" sx={{ mb: 1 }}>
-                                Địa Chỉ Nhà:
-                            </Typography>
                             {(dataForm.category || [])?.map((item, index) => (
                                 <Box
                                     key={index}
@@ -368,7 +365,7 @@ const CreateProduct = () => {
                                         options={district}
                                         getOptionLabel={(option) => (option ? option.name : '')}
                                         onChange={(e, value) => handleChangeInput(['category', 'district', index], value)}
-                                        renderInput={(params) => <TextField {...params} label="Quận/Huyện" placeholder="Phân loại" />}
+                                        renderInput={(params) => <TextField {...params} label="Quận/Huyện:" />}
                                     />
 
                                     <Autocomplete
@@ -377,11 +374,10 @@ const CreateProduct = () => {
                                         options={ward}
                                         getOptionLabel={(option) => (option ? option.name : '')}
                                         onChange={(e, value) => handleChangeInput(['category', 'ward', index], value.name)}
-                                        renderInput={(params) => <TextField {...params} label="Phường/Xã/Thị xã" placeholder="Phân loại" />}
+                                        renderInput={(params) => <TextField {...params} label="Phường/Xã/Thị xã:" />}
                                     />
                                     <TextField
-                                        required
-                                        label="Chi tiết"
+                                        label="Chi tiết:"
                                         id="location"
                                         value={item.location || ''} // Ensure a default value if item.location is undefined or null
                                         size="small"
