@@ -8,6 +8,7 @@ import { fCurrency } from 'utils/formatNumber';
 import Label from 'components/label';
 import { ColorPreview } from 'components/color-utils';
 import { useNavigate } from 'react-router-dom';
+import Avatar from 'ui-component/extended/Avatar';
 
 // ----------------------------------------------------------------------
 
@@ -26,6 +27,11 @@ ShopProductCard.propTypes = {
 };
 
 export default function ShopProductCard({ product }) {
+    //get user in local storage
+    const user = localStorage.getItem('user');
+    const userInfo = user ? JSON.parse(user) : null;
+    const uName = userInfo?.name;
+
     const { name, images, price, id, category } = product;
     const navigate = useNavigate();
 
@@ -53,25 +59,27 @@ export default function ShopProductCard({ product }) {
         return null;
     }
     const categoryObject = categoryArray[0];
-    const sold = categoryObject.sold;
+    const location = categoryObject.location;
+    const district = categoryObject.district;
+    const ward = categoryObject.ward;
 
     return (
+        //phần quyền cho việc CLick
         <Card onClick={() => navigate(`/product/${id}`)}>
             {renderImages()}
 
             <Stack spacing={2} sx={{ p: 3 }}>
                 <Link color="inherit" underline="hover">
-                    <Typography variant="subtitle1" noWrap>
+                    <Typography variant="subtitle1" rows={2} noWrap>
                         {name}
                     </Typography>
                 </Link>
+                <Typography variant="subtitle1">{fCurrency(price)} VNĐ/Tháng</Typography>
 
                 <Stack direction="row" justifyContent="space-between">
-                    {/* Price */}
-                    <Typography variant="subtitle1">{fCurrency(price)} VNĐ</Typography>
-
-                    {/* Sold */}
-                    <Typography variant="subtitle2">Đã bán: {sold}</Typography>
+                    <Typography variant="subtitle2" noWrap>
+                        {location}, {ward}, {district}, Hà Nội
+                    </Typography>
                 </Stack>
             </Stack>
         </Card>

@@ -21,9 +21,9 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
-import { storage, firestore } from '../../../firebase';
+import { storage, firestore } from '../../../../firebase';
 import { addDoc, collection } from 'firebase/firestore';
-import { FIRESTORE } from '../../../constants';
+import { FIRESTORE } from '../../../../constants';
 import { useNavigate } from 'react-router-dom';
 import { NotificationManager } from 'react-notifications';
 import products from '_mock/products';
@@ -33,7 +33,7 @@ import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import { styled, useTheme } from '@mui/material/styles';
 
 import { districtApi, wardApi } from 'api/clients/provinceService';
-const listType = ['Phòng trọ', 'Nhà trọ', 'Văn phòng'];
+const listType = ['Phòng trọ', 'Nhà trọ', 'Chung cư mini'];
 const INIT_DATA = {
     name: '',
     price: '',
@@ -45,7 +45,8 @@ const INIT_DATA = {
     status: 'Pending',
     category: [],
     description: '',
-    images: []
+    images: [],
+    emailUser: ''
 };
 const StyledProductImg = styled('img')({
     top: 0,
@@ -64,6 +65,11 @@ const CreateProduct = () => {
     const [district, setDistrict] = useState([]);
     const [districtIds, setDistrictIds] = useState();
     const [ward, setWard] = useState([]);
+
+    //get user in local storage
+    const user = localStorage.getItem('user');
+    const userInfo = user ? JSON.parse(user) : null;
+    const email = userInfo?.email;
 
     useEffect(() => {
         const fetchPublicDistrict = async () => {
@@ -169,6 +175,7 @@ const CreateProduct = () => {
             // Tạo dữ liệu sản phẩm với các đường dẫn download URL của ảnh
             const dataBody = {
                 ...dataForm,
+                emailUser: email,
                 images: downloadURLs,
                 category: JSON.stringify(dataForm.category),
                 created_at: new Date().valueOf(),
@@ -182,7 +189,7 @@ const CreateProduct = () => {
             // Đặt lại form và thông báo thành công
             setDataForm(INIT_DATA);
             NotificationManager.success('Tạo mới sản phẩm thành công!', 'Thông báo');
-            navigate('/products');
+            navigate('/user/my-products');
         } catch (error) {
             console.log(error);
             NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
@@ -316,7 +323,7 @@ const CreateProduct = () => {
                                 type="number"
                                 value={dataForm.price}
                                 onChange={(e) => handleChangeInput('price', e.target.value)}
-                                helperText={`${(dataForm.price || 0).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} VNĐ`}
+                                helperText={`${(dataForm.price || 0).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} VNĐ/Tháng`}
                             />
                             <TextField
                                 required

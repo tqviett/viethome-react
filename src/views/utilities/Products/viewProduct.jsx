@@ -1,4 +1,3 @@
-// ViewProduct.jsx
 import React, { useState, useEffect } from 'react';
 import {
     Container,
@@ -11,7 +10,9 @@ import {
     CardContent,
     CardMedia,
     CardActions,
-    Paper
+    Grid,
+    Avatar,
+    Divider
 } from '@mui/material';
 import { useParams, Link } from 'react-router-dom';
 import { getDoc, doc } from 'firebase/firestore';
@@ -86,7 +87,7 @@ const ViewProduct = () => {
                     <div>
                         {images.map((image, index) => (
                             <div key={index} style={{ display: index === activeStep ? 'block' : 'none' }}>
-                                <Box sx={{ pt: '100%', position: 'relative' }}>
+                                <Box sx={{ pt: '60%', position: 'relative' }}>
                                     <StyledProductImg
                                         src={image} // Sử dụng đường dẫn hình ảnh từ mảng images
                                         alt={index}
@@ -102,14 +103,14 @@ const ViewProduct = () => {
                     activeStep={activeStep}
                     nextButton={
                         <Button size="small" onClick={handleNext} disabled={activeStep === maxSteps - 1}>
-                            Next
+                            Ảnh tiếp
                             {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
                         </Button>
                     }
                     backButton={
                         <Button size="small" onClick={handleBack} disabled={activeStep === 0}>
                             {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-                            Back
+                            Ảnh trước
                         </Button>
                     }
                 />
@@ -140,64 +141,119 @@ const ViewProduct = () => {
                     sx={{
                         border: '1px solid #ffff',
                         p: 3,
-                        backgroundColor: '#ffff',
-                        borderRadius: 1,
-                        boxShadow: 'rgba(0, 0, 0, 0.16) 0px 1px 4px',
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'flex-end',
-                        justifyContent: 'space-between'
+                        backgroundColor: '#ffff'
                     }}
+                    direction="row"
+                    flexWrap="wrap-reverse"
+                    alignItems="flex-end"
+                    justifyContent="space-between"
                 >
-                    <Box>
-                        <Card>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between'
-                                }}
-                            >
-                                <Card sx={{ width: 300, height: 400 }}>
-                                    <CardMedia sx={{ width: '100%', height: '80%' }}>{renderImages()}</CardMedia>
+                    <Stack
+                        sx={{
+                            border: '1px solid #ffff',
+                            borderRadius: 1,
+                            display: 'flex'
+                        }}
+                    >
+                        <Stack
+                            direction="row"
+                            justifyContent="center"
+                            alignItems="center"
+                            sx={{
+                                display: 'flex',
+                                width: 700,
+                                height: 480,
+                                boxShadow: 'rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px',
+                                borderRadius: 1,
+                                mb: 2
+                            }}
+                        >
+                            <Stack direction="column" justifyContent="center" alignItems="center">
+                                <Card sx={{ width: 650, height: 425 }}>
+                                    <CardMedia sx={{ width: '100%', height: '100%' }}>{renderImages()}</CardMedia>
+                                </Card>
+                                <Card sx={{ height: 50 }}>
                                     <CardActions>
                                         <Button size="small">Share</Button>
                                         <Button size="small">Learn More</Button>
                                     </CardActions>
                                 </Card>
-                                <CardContent>
-                                    <Typography variant="h5" sx={{ mb: 1 }}>
-                                        Tên sản phẩm: {productData.name}
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ mb: 1 }}>
-                                        Số lượng: {categoryObject.total}
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ mb: 1 }}>
-                                        Số lượng đã bán: {categoryObject.sold}
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ mb: 1 }}>
-                                        Giá: {productData.price} VNĐ
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ mb: 1 }}>
-                                        Loại sản phẩm: {categoryObject.category}
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ mb: 1 }}>
-                                        Ghi chú: {productData.note}
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ mb: 1 }}>
-                                        Mô tả: {productData.description}
-                                    </Typography>
-                                </CardContent>
-                            </Box>
-                        </Card>
-                    </Box>
-                    <Stack direction="row" spacing={2}>
-                        <Button component={Link} to={`/products/edit/${params.id}`} variant="contained" color="primary">
-                            Chỉnh sửa
-                        </Button>
-                        <Button variant="outlined" color="error" disabled>
-                            Xóa sản phẩm
-                        </Button>
+                            </Stack>
+                        </Stack>
+
+                        <Stack
+                            sx={{
+                                width: 700,
+                                boxShadow: 'rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px',
+                                borderRadius: 1,
+                                height: 'auto',
+                                display: 'flex'
+                            }}
+                        >
+                            <CardContent>
+                                <Typography variant="h1" sx={{ mb: 1 }}>
+                                    Tên sản phẩm: {productData.name}
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 1 }}>
+                                    Số lượng: {categoryObject.total}
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 1 }}>
+                                    Số lượng đã bán: {categoryObject.sold}
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 1 }}>
+                                    Giá: {productData.price} VNĐ
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 1 }}>
+                                    Loại sản phẩm: {categoryObject.category}
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 1 }}>
+                                    Ghi chú: {productData.note}
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 1 }}>
+                                    Mô tả: {productData.description}
+                                </Typography>
+                            </CardContent>
+
+                            {/* //cần sửa quyền ẩn hiện nút CHỈNH SỬA */}
+                            <Stack justifyContent="right" alignItems="center" direction="row" spacing={1} sx={{ display: 'flex' }}>
+                                <Button component={Link} to={`/user/product/edit/${params.id}`} variant="contained" color="primary">
+                                    Chỉnh sửa
+                                </Button>
+                            </Stack>
+                        </Stack>
+                        <Stack direction="row" spacing={2}></Stack>
+                    </Stack>
+
+                    <Stack
+                        sx={{
+                            width: '35%'
+                        }}
+                    >
+                        <Box
+                            component="form"
+                            sx={{
+                                boxShadow: 'rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px',
+                                borderRadius: 1,
+                                '& .MuiTextField-root': { mb: 4, width: '100%' }
+                            }}
+                            noValidate
+                            autoComplete="off"
+                        >
+                            <CardContent>
+                                <Stack spacing={2} sx={{ alignItems: 'center' }}>
+                                    <Avatar sx={{ height: '80px', width: '80px' }} />
+                                    <Stack spacing={1} sx={{ textAlign: 'center' }}>
+                                        <Typography variant="h5">abc</Typography>
+                                        <Typography color="text.secondary" variant="body2">
+                                            abc
+                                        </Typography>
+                                        <Typography color="text.secondary" variant="body2">
+                                            abc
+                                        </Typography>
+                                    </Stack>
+                                </Stack>
+                            </CardContent>
+                        </Box>
                     </Stack>
                 </Stack>
             </Container>

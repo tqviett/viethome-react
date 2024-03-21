@@ -47,18 +47,19 @@ const Header = ({ handleLeftDrawerToggle }) => {
             <Box
                 sx={{
                     width: 228,
-                    flexGrow: 3,
+                    flexGrow: 2,
+                    alignItems: 'center',
                     display: 'flex',
                     [theme.breakpoints.down('md')]: {
                         width: 'auto'
                     }
                 }}
             >
-                <Box component="span" sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
+                <Box component="span" sx={{ display: { xs: 'none', md: 'block' } }}>
                     <LogoSection />
                 </Box>
                 {isAdmin && (
-                    <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden' }}>
+                    <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden', marginLeft: 12 }}>
                         <Avatar
                             variant="rounded"
                             sx={{
@@ -83,6 +84,8 @@ const Header = ({ handleLeftDrawerToggle }) => {
             {/* notification & profile */}
             {haveRole ? (
                 <>
+                    <Box sx={{ flexGrow: 1 }} />
+                    <Box sx={{ flexGrow: 1 }} />
                     <NotificationSection />
                     <ProfileSection />
                 </>

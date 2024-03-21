@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { doc, updateDoc, getDoc, getDocs, collection, query, where } from 'firebase/firestore';
+import { firestore } from '../../../../firebase';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -44,12 +46,15 @@ const ProfileSection = () => {
     const customization = useSelector((state) => state.customization);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
-    const [sdm, setSdm] = useState(true);
-    const [value, setValue] = useState('');
     const [notification, setNotification] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [open, setOpen] = useState(false);
+    const [dataForm, setDataForm] = useState([]);
+
+    //get user in local storage
+    const user = localStorage.getItem('user');
+    const userInfo = user ? JSON.parse(user) : null;
+    const email = userInfo?.email;
     /**
      * anchorRef is used on different componets and specifying one type leads to other components throwing an error
      * */
@@ -103,6 +108,28 @@ const ProfileSection = () => {
         fetchUserName();
     }, []);
 
+    useEffect(() => {
+        if (email) {
+            findUser();
+        }
+    }, [email]);
+
+    const findUser = async () => {
+        try {
+            const q = query(collection(firestore, 'users'), where('email', '==', email));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                const dataProduct = doc.data();
+                setDataForm({
+                    ...dataProduct,
+                    avatar: dataProduct.avatar
+                });
+            });
+        } catch (error) {
+            console.error('Error finding user:', error);
+        }
+    };
+
     return (
         <>
             <Chip
@@ -127,7 +154,7 @@ const ProfileSection = () => {
                 }}
                 icon={
                     <Avatar
-                        src={User1}
+                        src={dataForm.avatar}
                         sx={{
                             ...theme.typography.mediumAvatar,
                             margin: '8px -16px 8px 8px !important',
@@ -203,7 +230,7 @@ const ProfileSection = () => {
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                         selected={selectedIndex === 0}
-                                                        onClick={(event) => handleListItemClick(event, 0, '/user')}
+                                                        onClick={(event) => handleListItemClick(event, 0, '/user/profile')}
                                                     >
                                                         <ListItemIcon>
                                                             <IconUser stroke={1.5} size="1.3rem" />
@@ -221,7 +248,7 @@ const ProfileSection = () => {
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                         selected={selectedIndex === 1}
-                                                        onClick={(event) => handleListItemClick(event, 1, '/my-products')}
+                                                        onClick={(event) => handleListItemClick(event, 1, `/user/my-products`)}
                                                     >
                                                         <ListItemIcon>
                                                             <IconBuildingStore stroke={1.5} size="1.3rem" />
@@ -232,7 +259,7 @@ const ProfileSection = () => {
                                                     </ListItemButton>
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                        selected={selectedIndex === 1}
+                                                        selected={selectedIndex === 2}
                                                         onClick={(event) => handleListItemClick(event, 2, '/favorites')}
                                                     >
                                                         <ListItemIcon>
@@ -244,7 +271,7 @@ const ProfileSection = () => {
                                             )}
                                             <ListItemButton
                                                 sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                selected={selectedIndex === 4}
+                                                selected={selectedIndex === 3}
                                                 onClick={handleLogout}
                                             >
                                                 <ListItemIcon>

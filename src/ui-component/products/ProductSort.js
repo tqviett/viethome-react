@@ -7,10 +7,9 @@ import Iconify from 'components/iconify';
 // ----------------------------------------------------------------------
 
 const SORT_BY_OPTIONS = [
-    { value: 'featured', label: 'Featured' },
-    { value: 'newest', label: 'Newest' },
-    { value: 'priceDesc', label: 'Price: High-Low' },
-    { value: 'priceAsc', label: 'Price: Low-High' }
+    { value: 'Newest', label: 'Đăng gần đây' },
+    { value: 'priceDesc', label: 'Giá: cao -> thấp' },
+    { value: 'priceAsc', label: 'Giá: thấp -> cao' }
 ];
 
 export default function ShopProductSort() {

@@ -4,21 +4,30 @@ import { lazy } from 'react';
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 
-// dashboard routing
-const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+// dashboard routing- ADMIN ROUTING
+const DashboardDefault = Loadable(lazy(() => import('views/dashboard/ManageProducts')));
 
 // utilities routing
+
+//PUBLIC ROUTING
 const Products = Loadable(lazy(() => import('views/utilities/Products')));
-const MyProduct = Loadable(lazy(() => import('views/utilities/Products')));
-const CreateProducts = Loadable(lazy(() => import('views/utilities/Products/createProduct')));
-const EditProducts = Loadable(lazy(() => import('views/utilities/Products/editProduct')));
 const ViewProducts = Loadable(lazy(() => import('views/utilities/Products/viewProduct')));
-const Money = Loadable(lazy(() => import('views/utilities/Money')));
-const EditMoney = Loadable(lazy(() => import('views/utilities/Money/editMoney')));
+
+//USER ROUTING
+//USER product
+const MyProduct = Loadable(lazy(() => import('views/utilities/Users/Products')));
+const CreateMyProducts = Loadable(lazy(() => import('views/utilities/Users/Products/createProduct')));
+const EditMyProducts = Loadable(lazy(() => import('views/utilities/Users/Products/editProduct')));
+//USER profile
+const Users = Loadable(lazy(() => import('views/utilities/Users/profile')));
+
+//
+const Money = Loadable(lazy(() => import('views/dashboard/Money')));
+const EditMoney = Loadable(lazy(() => import('views/dashboard/Money/editMoney')));
 //utilities routing chat and user
 const Chats = Loadable(lazy(() => import('views/utilities/Chats/chat')));
 const ChatBox = Loadable(lazy(() => import('views/utilities/ChatBox/chatBox')));
-const Users = Loadable(lazy(() => import('views/utilities/Users')));
+
 // sample page routing
 const Orders = Loadable(lazy(() => import('views/utilities/Orders')));
 
@@ -28,34 +37,53 @@ const MainRoutes = {
     path: '/',
     element: <MainLayout />,
     children: [
+        //public
         {
             path: '/',
-            element: <DashboardDefault />
-        },
-        {
-            path: '/dashboard',
-            element: <DashboardDefault />
-        },
-        {
-            path: '/products',
             element: <Products />
         },
         {
-            path: '/my-products',
-            element: <MyProduct />
-        },
-        {
-            path: '/products/create',
-            element: <CreateProducts />
-        },
-        {
-            path: '/products/edit/:id',
-            element: <EditProducts />
+            path: '/home',
+            element: <Products />
         },
         {
             path: '/product/:id',
             element: <ViewProducts />
         },
+        //admin
+        {
+            path: '/admin',
+            children: [
+                {
+                    path: '/admin/dashboard',
+                    element: <DashboardDefault />
+                }
+            ]
+        },
+
+        //user
+        {
+            path: '/user',
+            children: [
+                {
+                    path: '/user/my-products',
+                    element: <MyProduct />
+                },
+                {
+                    path: '/user/product/create',
+                    element: <CreateMyProducts />
+                },
+                {
+                    path: '/user/product/edit/:id',
+                    element: <EditMyProducts />
+                },
+                {
+                    path: '/user/profile',
+                    element: <Users />
+                }
+            ]
+        },
+
         {
             path: '/orders',
             element: <Orders />
@@ -75,10 +103,6 @@ const MainRoutes = {
         {
             path: '/chatbox',
             element: <ChatBox />
-        },
-        {
-            path: '/user',
-            element: <Users />
         }
     ]
 };

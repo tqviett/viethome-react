@@ -33,17 +33,13 @@ const states = [
 export default function Page() {
     return (
         <Stack spacing={3}>
-            <div>
-                <Typography variant="h4">Account</Typography>
-            </div>
+            <Typography variant="h4">Account</Typography>
             <Grid container spacing={3}>
                 <Grid lg={4} md={6} xs={12}>
                     <Card>
                         <CardContent>
                             <Stack spacing={2} sx={{ alignItems: 'center' }}>
-                                <div>
-                                    <Avatar src={user.avatar} sx={{ height: '80px', width: '80px' }} />
-                                </div>
+                                <Avatar src={user.avatar} sx={{ height: '80px', width: '80px' }} />
                                 <Stack spacing={1} sx={{ textAlign: 'center' }}>
                                     <Typography variant="h5">{user.name}</Typography>
                                     <Typography color="text.secondary" variant="body2">

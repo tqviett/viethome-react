@@ -21,9 +21,9 @@ import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { ref, getDownloadURL, uploadBytesResumable, deleteObject } from 'firebase/storage';
-import { storage, firestore } from '../../../firebase';
-import { doc, updateDoc, getDoc, collection } from 'firebase/firestore';
-import { FIRESTORE } from '../../../constants';
+import { storage, firestore } from '../../../../firebase';
+import { doc, updateDoc, getDoc, deleteDoc, collection } from 'firebase/firestore';
+import { FIRESTORE } from '../../../../constants';
 import { useNavigate, useParams } from 'react-router-dom';
 import { NotificationManager } from 'react-notifications';
 import { Delete, Edit } from '@mui/icons-material';
@@ -33,7 +33,7 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera';
 //API functions
 import { districtApi, wardApi } from 'api/clients/provinceService';
 
-const listType = ['Phòng trọ', 'Nhà trọ', 'Văn phòng'];
+const listType = ['Phòng trọ', 'Nhà trọ', 'Chung cư mini'];
 const INIT_DATA = {
     name: '',
     price: '',
@@ -190,7 +190,7 @@ const EditProduct = () => {
             await updateDoc(doc(firestore, FIRESTORE.PRODUCTS, params.id), dataBody);
             NotificationManager.success('Cập nhật sản phẩm thành công!', 'Thông báo');
             setDataForm(INIT_DATA);
-            navigate('/my-products');
+            navigate('/user/my-products');
         } catch (error) {
             console.log(error);
             NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
@@ -252,16 +252,16 @@ const EditProduct = () => {
     //     }
     // };
 
-    // const handleDeleteProduct = async () => {
-    //     try {
-    //         await deleteDoc(doc(firestore, FIRESTORE.PRODUCTS, params.id));
-    //         NotificationManager.success('Xóa sản phẩm thành công!', 'Thông báo');
-    //         navigate('/products');
-    //     } catch (error) {
-    //         console.error(error);
-    //         NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
-    //     }
-    // };
+    const handleDeleteProduct = async () => {
+        try {
+            await deleteDoc(doc(firestore, FIRESTORE.PRODUCTS, params.id));
+            NotificationManager.success('Xóa sản phẩm thành công!', 'Thông báo');
+            navigate('/user/my-products');
+        } catch (error) {
+            console.error(error);
+            NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
+        }
+    };
 
     const ModalConfirm = () => (
         <Dialog onClose={() => setOpenModal(false)} open={openModal} sx={{ padding: '30px !important' }}>
@@ -270,10 +270,10 @@ const EditProduct = () => {
             </IconButton>
             <DialogTitle sx={{ fontSize: 18 }}>Bạn muốn xóa sản phẩm này à?</DialogTitle>
             <Stack spacing={2} paddingBottom={2} paddingTop={2} paddingRight={2} direction="row" justifyContent={'flex-end'}>
-                <Button color="error" variant="contained">
+                <Button color="error" variant="contained" onClick={handleDeleteProduct}>
                     Xóa luôn
                 </Button>
-                <Button color="error" variant="outlined">
+                <Button color="error" variant="outlined" onClick={() => setOpenModal(false)}>
                     À thôi
                 </Button>
             </Stack>
@@ -416,7 +416,7 @@ const EditProduct = () => {
                                 type="number"
                                 value={dataForm.price}
                                 onChange={(e) => handleChangeInput('price', e.target.value)}
-                                helperText={`${(dataForm.price || 0).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} VNĐ`}
+                                helperText={`${(dataForm.price || 0).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} VNĐ/Tháng`}
                             />
                             <TextField
                                 required

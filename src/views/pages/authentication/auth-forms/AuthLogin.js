@@ -87,7 +87,7 @@ const FirebaseLogin = ({ ...others }) => {
                     };
                     localStorage.setItem('user', JSON.stringify(userInfo));
                     dispatch({ type: SET_CURRENT_USER, email: user.email });
-                    navigate(role === 'admin' ? '/dashboard' : '/products');
+                    navigate(role === 'admin' ? '/admin/dashboard' : '/');
                 });
             })
             .catch((error) => {

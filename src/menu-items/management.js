@@ -11,7 +11,7 @@ const icons = {
 
 // ==============================|| UTILITIES MENU ITEMS ||============================== //
 
-const utilities = {
+const management = {
     id: 'management',
     title: 'Quản lí',
     type: 'group',
@@ -43,4 +43,4 @@ const utilities = {
     ]
 };
 
-export default utilities;
+export default management;

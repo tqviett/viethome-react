@@ -8,16 +8,21 @@ import { ProductSort, ProductList, ProductCartWidget, ProductFilterSidebar } fro
 // mock
 import { useNavigate } from 'react-router-dom';
 import { getDocs, collection } from 'firebase/firestore';
-import { firestore } from '../../../firebase';
-import { FIRESTORE } from '../../../constants';
+import { firestore } from '../../../../firebase';
+import { FIRESTORE } from '../../../../constants';
 import { useEffect } from 'react';
-import SearchSection from './SearchSection';
+
 // ----------------------------------------------------------------------
 
 export default function ProductsPage() {
     const navigate = useNavigate();
     const [openFilter, setOpenFilter] = useState(false);
     const [products, setProducts] = useState([]);
+
+    //get user in local storage
+    const user = localStorage.getItem('user');
+    const userInfo = user ? JSON.parse(user) : null;
+    const email = userInfo?.email;
 
     const handleOpenFilter = () => {
         setOpenFilter(true);
@@ -28,18 +33,21 @@ export default function ProductsPage() {
     };
 
     const findAll = async () => {
-        const doc_refs = await getDocs(collection(firestore, FIRESTORE.PRODUCTS));
+        const docRefs = await getDocs(collection(firestore, FIRESTORE.PRODUCTS));
         const res = [];
-        doc_refs.forEach((product) => {
-            res.push({
-                ...product.data(),
-                id: product.id
-            });
+        docRefs.forEach((product) => {
+            const data = product.data();
+            if (data.emailUser === email) {
+                res.push({
+                    ...data,
+                    id: product.id
+                });
+            }
         });
         setProducts(res);
-
         return res;
     };
+
     useEffect(() => {
         findAll();
     }, []);
@@ -56,7 +64,9 @@ export default function ProductsPage() {
                 </Typography>
 
                 <Stack direction="row" flexWrap="wrap-reverse" alignItems="center" justifyContent="space-between" sx={{ mb: 5 }}>
-                    <SearchSection />
+                    <Button color="secondary" variant="contained" endIcon={<AddIcon />} onClick={() => navigate('/product/create')}>
+                        Thêm mới sản phẩm
+                    </Button>
                     <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>
                         <ProductFilterSidebar
                             bar
