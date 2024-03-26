@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -35,9 +35,9 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
 import User1 from 'assets/images/users/user-round.svg';
-import { SET_CURRENT_USER } from 'store/actions';
 // assets
-import { IconLogout, IconSearch, IconSettings, IconUser, IconBuildingStore, IconHeart } from '@tabler/icons';
+import { IconLogout, IconSearch, IconSettings, IconUser, IconBuildingStore, IconHeart, IconMessage } from '@tabler/icons';
+import { AuthContext } from 'context/AuthContext';
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -50,11 +50,8 @@ const ProfileSection = () => {
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [open, setOpen] = useState(false);
     const [dataForm, setDataForm] = useState([]);
+    const { currentUser } = useContext(AuthContext);
 
-    //get user in local storage
-    const user = localStorage.getItem('user');
-    const userInfo = user ? JSON.parse(user) : null;
-    const email = userInfo?.email;
     /**
      * anchorRef is used on different componets and specifying one type leads to other components throwing an error
      * */
@@ -62,7 +59,6 @@ const ProfileSection = () => {
     const handleLogout = async () => {
         localStorage.setItem('user', '');
         localStorage.setItem('accessToken', '');
-        dispatch({ type: SET_CURRENT_USER, user: null });
         navigate('/login');
     };
 
@@ -91,11 +87,9 @@ const ProfileSection = () => {
     const [isAdmin, setIsAdmin] = useState(false);
     useEffect(() => {
         const fetchUserName = () => {
-            const userDataString = localStorage.getItem('user');
-            if (userDataString) {
-                const userData = JSON.parse(userDataString);
-                setUserName(userData.name);
-                const roles = userData.role;
+            if (currentUser) {
+                setUserName(currentUser.name);
+                const roles = currentUser.role;
                 setIsAdmin(roles === 'admin');
                 if (roles == 'user') {
                     setRole('Người dùng');
@@ -109,14 +103,14 @@ const ProfileSection = () => {
     }, []);
 
     useEffect(() => {
-        if (email) {
+        if (currentUser.email) {
             findUser();
         }
-    }, [email]);
+    }, [currentUser.email]);
 
     const findUser = async () => {
         try {
-            const q = query(collection(firestore, 'users'), where('email', '==', email));
+            const q = query(collection(firestore, 'users'), where('email', '==', currentUser.email));
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
                 const dataProduct = doc.data();
@@ -201,7 +195,7 @@ const ProfileSection = () => {
                                             <Stack direction="row" spacing={0.5} alignItems="center">
                                                 <Typography variant="h4">Xin chào,</Typography>
                                                 <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                                                    {userName}
+                                                    {dataForm.name}
                                                 </Typography>
                                             </Stack>
                                             <Typography variant="subtitle2">{role}</Typography>
@@ -260,12 +254,12 @@ const ProfileSection = () => {
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                         selected={selectedIndex === 2}
-                                                        onClick={(event) => handleListItemClick(event, 2, '/favorites')}
+                                                        onClick={(event) => handleListItemClick(event, 2, '/messages')}
                                                     >
                                                         <ListItemIcon>
-                                                            <IconHeart stroke={1.5} size="1.3rem" />
+                                                            <IconMessage stroke={1.5} size="1.3rem" />
                                                         </ListItemIcon>
-                                                        <ListItemText primary={<Typography variant="body2">Tin đã lưu</Typography>} />
+                                                        <ListItemText primary={<Typography variant="body2">Tin nhắn</Typography>} />
                                                     </ListItemButton>
                                                 </>
                                             )}

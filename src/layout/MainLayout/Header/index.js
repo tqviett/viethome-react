@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useSelector } from 'react-redux';
 import { firestore } from '../../../firebase';
 
@@ -17,23 +17,20 @@ import { Link } from 'react-router-dom';
 
 // assets
 import { IconMenu2 } from '@tabler/icons';
+import { AuthContext } from 'context/AuthContext';
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
 const Header = ({ handleLeftDrawerToggle }) => {
     const theme = useTheme();
-    // // lấy thông tin người dùng từ Current User
-    // const currentUser = useSelector((state) => state.customization.currentUser);
-    // const userEmail = currentUser ? currentUser : null;
-    // console.log('userEmail', userEmail);
+    const { currentUser } = useContext(AuthContext);
+    // lấy thông tin người dùng từ Current User
     const [isAdmin, setIsAdmin] = useState(false);
     const [haveRole, setHaveRole] = useState(false);
     useEffect(() => {
         const fetchUserRole = () => {
-            const userDataString = localStorage.getItem('user');
-            if (userDataString) {
-                const userData = JSON.parse(userDataString);
-                const role = userData.role;
+            if (currentUser) {
+                const role = currentUser.role;
                 setIsAdmin(role === 'admin');
                 setHaveRole('true');
             }

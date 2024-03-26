@@ -34,7 +34,6 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 import Google from 'assets/images/icons/social-google.svg';
 import { auth } from '../../../../firebase';
-import { SET_CURRENT_USER, setCurrentUser } from 'store/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { NotificationManager } from 'react-notifications';
 import { useNavigate } from 'react-router-dom';
@@ -86,7 +85,6 @@ const FirebaseLogin = ({ ...others }) => {
                         name: name
                     };
                     localStorage.setItem('user', JSON.stringify(userInfo));
-                    dispatch({ type: SET_CURRENT_USER, email: user.email });
                     navigate(role === 'admin' ? '/admin/dashboard' : '/');
                 });
             })

@@ -12,6 +12,8 @@ import { store } from 'store';
 // style + assets
 import 'assets/scss/style.scss';
 import config from './config';
+import { AuthContextProvider } from 'context/AuthContext';
+import { ChatContextProvider } from 'context/ChatContext';
 
 // ==============================|| REACT DOM RENDER  ||============================== //
 
@@ -19,9 +21,13 @@ const container = document.getElementById('root');
 const root = createRoot(container); // createRoot(container!) if you use TypeScript
 root.render(
     <Provider store={store}>
-        <BrowserRouter basename={config.basename}>
-            <App />
-        </BrowserRouter>
+        <AuthContextProvider>
+            <ChatContextProvider>
+                <BrowserRouter basename={config.basename}>
+                    <App />
+                </BrowserRouter>
+            </ChatContextProvider>
+        </AuthContextProvider>
     </Provider>
 );
 

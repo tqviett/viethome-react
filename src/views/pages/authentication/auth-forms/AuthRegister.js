@@ -39,7 +39,7 @@ import { auth } from '../../../../firebase';
 import { useSelector } from 'react-redux';
 import { NotificationManager } from 'react-notifications';
 import { useNavigate } from 'react-router-dom';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
 import { firestore } from '../../../../firebase';
 import { FIRESTORE } from '../../../../constants';
 
@@ -70,11 +70,11 @@ const FirebaseRegister = ({ ...others }) => {
                 avatar: '',
                 phone: '',
                 about: '',
-                role: 'user',
-                message: [{ NotificationId: '', number: 0 }]
+                role: 'user'
             };
 
-            await addDoc(collection(firestore, FIRESTORE.USERS), userData);
+            await setDoc(doc(firestore, FIRESTORE.USERS, user.uid), userData);
+            await setDoc(doc(firestore, 'userChats', user.uid), {});
 
             NotificationManager.success('Đăng kí thành công rồi he!', 'Thông báo');
             navigate('/login');

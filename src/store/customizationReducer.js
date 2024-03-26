@@ -39,11 +39,6 @@ const customizationReducer = (state = initialState, action) => {
                 ...state,
                 borderRadius: action.borderRadius
             };
-        case actionTypes.SET_CURRENT_USER:
-            return {
-                ...state,
-                currentUser: action.email
-            };
         default:
             return state;
     }
