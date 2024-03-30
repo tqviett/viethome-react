@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { useEffect, useState, useContext } from 'react';
 import { useSelector } from 'react-redux';
 import { firestore } from '../../../firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -27,17 +28,34 @@ const Header = ({ handleLeftDrawerToggle }) => {
     // lấy thông tin người dùng từ Current User
     const [isAdmin, setIsAdmin] = useState(false);
     const [haveRole, setHaveRole] = useState(false);
+    const [dataForm, setDataForm] = useState([]);
+    const findUser = async () => {
+        try {
+            const q = query(collection(firestore, 'users'), where('email', '==', currentUser.email));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                const dataProduct = doc.data();
+                setDataForm({
+                    ...dataProduct,
+                    avatar: dataProduct.avatar
+                });
+            });
+        } catch (error) {
+            console.error('Error finding user:', error);
+        }
+    };
     useEffect(() => {
-        const fetchUserRole = () => {
-            if (currentUser) {
-                const role = currentUser.role;
-                setIsAdmin(role === 'admin');
-                setHaveRole('true');
-            }
-        };
-
-        fetchUserRole();
-    }, []);
+        if (currentUser.email) {
+            findUser();
+        }
+    }, [currentUser.email]);
+    useEffect(() => {
+        if (dataForm) {
+            const role = dataForm.role;
+            setIsAdmin(role === 'admin');
+            setHaveRole('true');
+        }
+    }, [dataForm]);
     return (
         <>
             {/* logo & toggler button */}

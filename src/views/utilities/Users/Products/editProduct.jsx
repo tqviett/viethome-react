@@ -32,6 +32,8 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
 //API functions
 import { districtApi, wardApi } from 'api/clients/provinceService';
+import { useContext } from 'react';
+import { AuthContext } from 'context/AuthContext';
 
 const listType = ['Phòng trọ', 'Nhà trọ', 'Chung cư mini'];
 const INIT_DATA = {
@@ -64,11 +66,13 @@ const EditProduct = () => {
     const [district, setDistrict] = useState([]);
     const [districtIds, setDistrictIds] = useState();
     const [ward, setWard] = useState([]);
+    const { currentUser } = useContext(AuthContext);
 
     // USEEFFECT
     useEffect(() => {
         if (params?.id) findProduct();
     }, [params]);
+
     useEffect(() => {
         const fetchPublicDistrict = async () => {
             const response = await districtApi();
@@ -98,6 +102,12 @@ const EditProduct = () => {
         };
         districtIds && fetchPublicWard(districtIds);
     }, [districtIds]);
+    useEffect(() => {
+        if (params?.id) findProduct();
+        if (currentUser.email !== dataForm.emailUser) {
+            navigate('/page-not-found');
+        }
+    }, [params, currentUser, dataForm]);
 
     //Function
 
@@ -198,59 +208,6 @@ const EditProduct = () => {
             setLoading(false);
         }
     };
-
-    // const handleChangeImages = async (e, setDataForm, dataForm) => {
-    //     const files = e.target.files;
-    //     if (files) {
-    //         const newImages = [];
-    //         const uploadTasks = Array.from(files).map((file) => {
-    //             return new Promise((resolve, reject) => {
-    //                 const reader = new FileReader();
-    //                 reader.onloadend = async () => {
-    //                     try {
-    //                         const storageRef = ref(storage, `files/${file.name}`);
-    //                         const uploadTask = uploadBytesResumable(storageRef, file);
-    //                         await uploadTask;
-    //                         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-    //                         newImages.push(downloadURL);
-    //                         resolve();
-    //                     } catch (error) {
-    //                         reject(error);
-    //                     }
-    //                 };
-    //                 reader.readAsDataURL(file);
-    //             });
-    //         });
-    //         await Promise.all(uploadTasks);
-    //         if (dataForm) {
-    //             setDataForm({ ...dataForm, images: [...dataForm.images, ...newImages] });
-    //         } else {
-    //             setDataForm({ ...dataForm, images: [...newImages] });
-    //         }
-    //     }
-    // };
-
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     setLoading(true);
-    //     try {
-    //         const dataBody = {
-    //             ...dataForm,
-    //             category: JSON.stringify(dataForm.category),
-    //             updated_at: new Date().valueOf(),
-    //             deleted_at: ''
-    //         };
-    //         await updateDoc(doc(firestore, FIRESTORE.PRODUCTS, dataForm.id), dataBody);
-    //         setDataForm(INIT_DATA);
-    //         NotificationManager.success('Chỉnh sửa sản phẩm thành công!', 'Thông báo');
-    //         navigate('/my-products');
-    //     } catch (error) {
-    //         console.error(error);
-    //         NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
 
     const handleDeleteProduct = async () => {
         try {

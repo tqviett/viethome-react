@@ -9,11 +9,12 @@ const DashboardDefault = Loadable(lazy(() => import('views/dashboard/ManageProdu
 
 // utilities routing
 
-//PUBLIC ROUTING
+//---------------------------PUBLIC ROUTE IMPORT----------------------------------------
 const Products = Loadable(lazy(() => import('views/utilities/Products')));
 const ViewProducts = Loadable(lazy(() => import('views/utilities/Products/viewProduct')));
+const NotFound = Loadable(lazy(() => import('views/error')));
 
-//USER ROUTING
+//---------------------------USER ROUTE IMPORT----------------------------------------
 //USER product
 const MyProduct = Loadable(lazy(() => import('views/utilities/Users/Products')));
 const CreateMyProducts = Loadable(lazy(() => import('views/utilities/Users/Products/createProduct')));
@@ -36,7 +37,7 @@ const MainRoutes = {
     path: '/',
     element: <MainLayout />,
     children: [
-        //public
+        //-----------public-----------
         {
             path: '/',
             element: <Products />
@@ -49,40 +50,28 @@ const MainRoutes = {
             path: '/product/:id',
             element: <ViewProducts />
         },
-        //admin
         {
-            path: '/admin',
-            children: [
-                {
-                    path: '/admin/dashboard',
-                    element: <DashboardDefault />
-                }
-            ]
+            path: '/page-not-found',
+            element: <NotFound />
+        },
+        {
+            path: '/profile',
+            element: <Users />
+        },
+        {
+            path: '/messages',
+            element: <Chats />
         },
 
-        //user
+        //-----------admin-----------
         {
-            path: '/user',
-            children: [
-                {
-                    path: '/user/my-products',
-                    element: <MyProduct />
-                },
-                {
-                    path: '/user/product/create',
-                    element: <CreateMyProducts />
-                },
-                {
-                    path: '/user/product/edit/:id',
-                    element: <EditMyProducts />
-                },
-                {
-                    path: '/user/profile',
-                    element: <Users />
-                }
-            ]
+            path: '/admin/dashboard',
+            element: <DashboardDefault />
         },
-
+        {
+            path: '/admin/ManageProducts',
+            element: <DashboardDefault />
+        },
         {
             path: '/orders',
             element: <Orders />
@@ -95,9 +84,20 @@ const MainRoutes = {
             path: '/money/edit',
             element: <EditMoney />
         },
+
+        //-----------user-----------
+
         {
-            path: '/messages',
-            element: <Chats />
+            path: '/user/my-products',
+            element: <MyProduct />
+        },
+        {
+            path: '/user/product/create',
+            element: <CreateMyProducts />
+        },
+        {
+            path: '/user/product/edit/:id',
+            element: <EditMyProducts />
         }
     ]
 };

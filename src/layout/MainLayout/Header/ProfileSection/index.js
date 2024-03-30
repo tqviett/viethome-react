@@ -82,25 +82,19 @@ const ProfileSection = () => {
     };
 
     const prevOpen = useRef(open);
-    const [userName, setUserName] = useState('');
     const [role, setRole] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
     useEffect(() => {
-        const fetchUserName = () => {
-            if (currentUser) {
-                setUserName(currentUser.name);
-                const roles = currentUser.role;
-                setIsAdmin(roles === 'admin');
-                if (roles == 'user') {
-                    setRole('Người dùng');
-                } else if (roles == 'admin') {
-                    setRole('Quản trị viên');
-                }
+        if (dataForm) {
+            const roles = dataForm.role;
+            setIsAdmin(roles === 'admin');
+            if (roles == 'user') {
+                setRole('Người dùng');
+            } else if (roles == 'admin') {
+                setRole('Quản trị viên');
             }
-        };
-
-        fetchUserName();
-    }, []);
+        }
+    }, [dataForm]);
 
     useEffect(() => {
         if (currentUser.email) {
@@ -219,26 +213,26 @@ const ProfileSection = () => {
                                                 }
                                             }}
                                         >
+                                            <ListItemButton
+                                                sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                selected={selectedIndex === 0}
+                                                onClick={(event) => handleListItemClick(event, 0, '/profile')}
+                                            >
+                                                <ListItemIcon>
+                                                    <IconUser stroke={1.5} size="1.3rem" />
+                                                </ListItemIcon>
+                                                <ListItemText
+                                                    primary={
+                                                        <Grid container spacing={1} justifyContent="space-between">
+                                                            <Grid item>
+                                                                <Typography variant="body2">Thông tin cá nhân</Typography>
+                                                            </Grid>
+                                                        </Grid>
+                                                    }
+                                                />
+                                            </ListItemButton>
                                             {!isAdmin && (
                                                 <>
-                                                    <ListItemButton
-                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                        selected={selectedIndex === 0}
-                                                        onClick={(event) => handleListItemClick(event, 0, '/user/profile')}
-                                                    >
-                                                        <ListItemIcon>
-                                                            <IconUser stroke={1.5} size="1.3rem" />
-                                                        </ListItemIcon>
-                                                        <ListItemText
-                                                            primary={
-                                                                <Grid container spacing={1} justifyContent="space-between">
-                                                                    <Grid item>
-                                                                        <Typography variant="body2">Thông tin cá nhân</Typography>
-                                                                    </Grid>
-                                                                </Grid>
-                                                            }
-                                                        />
-                                                    </ListItemButton>
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                         selected={selectedIndex === 1}

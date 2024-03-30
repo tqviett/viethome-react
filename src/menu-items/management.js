@@ -20,7 +20,7 @@ const management = {
             id: 'product',
             title: 'Sản phẩm',
             type: 'item',
-            url: '/products',
+            url: '/admin/ManageProducts',
             icon: icons.IconBuildingStore,
             breadcrumbs: false
         },

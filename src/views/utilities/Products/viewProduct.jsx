@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     Container,
     Stack,
@@ -12,10 +12,13 @@ import {
     CardActions,
     Grid,
     Avatar,
-    Divider
+    Divider,
+    ListItemText,
+    ListItemButton,
+    ListItemIcon
 } from '@mui/material';
-import { useParams, Link } from 'react-router-dom';
-import { getDoc, doc } from 'firebase/firestore';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { getDoc, doc, getDocs, query, collection, where } from 'firebase/firestore';
 import { firestore } from '../../../firebase';
 import { FIRESTORE } from '../../../constants';
 import { Helmet } from 'react-helmet-async';
@@ -23,6 +26,8 @@ import { styled, useTheme } from '@mui/material/styles';
 import MobileStepper from '@mui/material/MobileStepper';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import { IconMessage } from '@tabler/icons';
+import { AuthContext } from 'context/AuthContext';
 
 const StyledProductImg = styled('img')({
     top: 0,
@@ -38,7 +43,32 @@ const ViewProduct = () => {
     const [loading, setLoading] = useState(true);
     const params = useParams();
     const [activeStep, setActiveStep] = React.useState(0);
+    const { currentUser } = useContext(AuthContext);
+    const [dataUser, setDataUser] = useState([]);
+    const navigate = useNavigate();
 
+    useEffect(() => {
+        if (currentUser.email) {
+            findUser();
+        }
+    }, [currentUser.email]);
+
+    //Function
+    const findUser = async () => {
+        try {
+            const q = query(collection(firestore, 'users'), where('email', '==', currentUser.email));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                setDataUser({
+                    ...data,
+                    avatar: data.avatar
+                });
+            });
+        } catch (error) {
+            console.error('Error finding user:', error);
+        }
+    };
     const fetchProductData = async () => {
         try {
             const snap = await getDoc(doc(firestore, FIRESTORE.PRODUCTS, params.id));
@@ -98,17 +128,21 @@ const ViewProduct = () => {
                     </div>
                 )}
                 <MobileStepper
+                    variant="text"
+                    sx={{
+                        color: 'secondary.main' // Đổi màu chữ thành màu chính của secondary
+                    }}
                     steps={maxSteps}
                     position="static"
                     activeStep={activeStep}
                     nextButton={
-                        <Button size="small" onClick={handleNext} disabled={activeStep === maxSteps - 1}>
+                        <Button size="small" color="secondary" onClick={handleNext} disabled={activeStep === maxSteps - 1}>
                             Ảnh tiếp
                             {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
                         </Button>
                     }
                     backButton={
-                        <Button size="small" onClick={handleBack} disabled={activeStep === 0}>
+                        <Button size="small" color="secondary" onClick={handleBack} disabled={activeStep === 0}>
                             {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
                             Ảnh trước
                         </Button>
@@ -174,8 +208,12 @@ const ViewProduct = () => {
                                 </Card>
                                 <Card sx={{ height: 50 }}>
                                     <CardActions>
-                                        <Button size="small">Share</Button>
-                                        <Button size="small">Learn More</Button>
+                                        <Button color="secondary" size="small">
+                                            Share
+                                        </Button>
+                                        <Button color="secondary" size="small">
+                                            Learn More
+                                        </Button>
                                     </CardActions>
                                 </Card>
                             </Stack>
@@ -215,11 +253,13 @@ const ViewProduct = () => {
                             </CardContent>
 
                             {/* //cần sửa quyền ẩn hiện nút CHỈNH SỬA */}
-                            <Stack justifyContent="right" alignItems="center" direction="row" spacing={1} sx={{ display: 'flex' }}>
-                                <Button component={Link} to={`/user/product/edit/${params.id}`} variant="contained" color="primary">
-                                    Chỉnh sửa
-                                </Button>
-                            </Stack>
+                            {currentUser.email === productData.emailUser && (
+                                <Stack justifyContent="right" alignItems="center" direction="row" spacing={1} sx={{ display: 'flex' }}>
+                                    <Button color="secondary" component={Link} to={`/user/product/edit/${params.id}`} variant="contained">
+                                        Chỉnh sửa
+                                    </Button>
+                                </Stack>
+                            )}
                         </Stack>
                         <Stack direction="row" spacing={2}></Stack>
                     </Stack>
@@ -241,16 +281,26 @@ const ViewProduct = () => {
                         >
                             <CardContent>
                                 <Stack spacing={2} sx={{ alignItems: 'center' }}>
-                                    <Avatar sx={{ height: '80px', width: '80px' }} />
+                                    <Avatar sx={{ height: '80px', width: '80px' }} src={dataUser.avatar} />
                                     <Stack spacing={1} sx={{ textAlign: 'center' }}>
-                                        <Typography variant="h5">abc</Typography>
+                                        <Typography variant="h5">{dataUser.name}</Typography>
                                         <Typography color="text.secondary" variant="body2">
-                                            abc
+                                            {dataUser.role}
                                         </Typography>
                                         <Typography color="text.secondary" variant="body2">
-                                            abc
+                                            {dataUser.phone}
                                         </Typography>
                                     </Stack>
+                                    <ListItemButton sx={{ borderRadius: 1 }} onClick={() => navigate('/')}>
+                                        <ListItemIcon>
+                                            <IconMessage stroke={1.5} size="1.3rem" />
+                                        </ListItemIcon>
+                                        <ListItemText secondary={<Typography variant="contained">Tin nhắn</Typography>} />
+                                    </ListItemButton>
+                                    {/* <Button color="success" component={Link} to={'/'} variant="contained">
+                                        <IconMessage />
+                                        Nhắn tin ngay
+                                    </Button> */}
                                 </Stack>
                             </CardContent>
                         </Box>
