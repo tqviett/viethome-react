@@ -14,6 +14,7 @@ import Transitions from 'ui-component/extended/Transitions';
 // assets
 import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons';
 import { shouldForwardProp } from '@mui/system';
+import { ProductSort, ProductList, ProductCartWidget, ProductFilterSidebar } from 'ui-component/products';
 
 // styles
 const PopperStyle = styled(Popper, { shouldForwardProp })(({ theme }) => ({
@@ -118,6 +119,14 @@ MobileSearch.propTypes = {
 const SearchSection = () => {
     const theme = useTheme();
     const [value, setValue] = useState('');
+    const [openFilter, setOpenFilter] = useState(false);
+    const handleOpenFilter = () => {
+        setOpenFilter(true);
+    };
+
+    const handleCloseFilter = () => {
+        setOpenFilter(false);
+    };
 
     return (
         <>
@@ -125,7 +134,7 @@ const SearchSection = () => {
                 <PopupState variant="popper" popupId="demo-popup-popper">
                     {(popupState) => (
                         <>
-                            <Box sx={{ ml: 2 }}>
+                            <Box sx={{ ml: 10 }}>
                                 <ButtonBase sx={{ borderRadius: '12px' }}>
                                     <HeaderAvatarStyle variant="rounded" {...bindToggle(popupState)}>
                                         <IconSearch stroke={1.5} size="1.2rem" />
@@ -176,6 +185,12 @@ const SearchSection = () => {
                         <InputAdornment position="end">
                             <ButtonBase sx={{ borderRadius: '12px' }}>
                                 <HeaderAvatarStyle variant="rounded">
+                                    <ProductFilterSidebar
+                                        bar
+                                        openFilter={openFilter}
+                                        onOpenFilter={handleOpenFilter}
+                                        onCloseFilter={handleCloseFilter}
+                                    />
                                     <IconAdjustmentsHorizontal stroke={1.5} size="1.3rem" />
                                 </HeaderAvatarStyle>
                             </ButtonBase>

@@ -1,7 +1,19 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from 'context/AuthContext';
 import { ChatContext } from 'context/ChatContext';
-import { arrayUnion, doc, serverTimestamp, Timestamp, updateDoc } from 'firebase/firestore';
+import {
+    arrayUnion,
+    doc,
+    serverTimestamp,
+    Timestamp,
+    updateDoc,
+    setDoc,
+    getDoc,
+    query,
+    collection,
+    where,
+    getDocs
+} from 'firebase/firestore';
 import { v4 as uuid } from 'uuid';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { firestore, storage } from '../../../firebase';
@@ -10,20 +22,17 @@ import { Button, IconButton, Box, Stack, ImageList, ImageListItem, TextField } f
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { styled, useTheme } from '@mui/material/styles';
+import { useParams } from 'react-router-dom';
+import { FIRESTORE } from '../../../constants';
 
-const StyledProductImg = styled('img')({
-    top: 0,
-    width: 80,
-    height: 80,
-    objectFit: 'cover',
-    position: 'absolute'
-});
 const Input = () => {
     const [text, setText] = useState('');
     const [img, setImg] = useState([]);
-
+    const params = useParams();
     const { currentUser } = useContext(AuthContext);
-    const { data } = useContext(ChatContext);
+    const { data, dispatch } = useContext(ChatContext);
+    const [paramCheck, setParamCheck] = useState(false);
+    const [user, setUser] = useState([]);
 
     const handleChangeImages = (e) => {
         const newImages = Array.from(e.target.files);
@@ -88,11 +97,106 @@ const Input = () => {
                         },
                         [data.chatId + '.date']: serverTimestamp()
                     });
+
+                    // Sau khi gửi tin nhắn thành công, cập nhật state của text thành chuỗi rỗng
+                    setText('');
                 } catch (error) {
                     console.error(error);
                 }
             }
         }
+    };
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSend();
+        }
+    };
+
+    const [productData, setProductData] = useState([]);
+    const fetchProductData = async () => {
+        try {
+            const snap = await getDoc(doc(firestore, FIRESTORE.PRODUCTS, params.id));
+            if (snap.exists()) {
+                setProductData(snap.data());
+            } else {
+                console.log('No such document');
+            }
+        } catch (error) {
+            console.error('Error fetching product data:', error);
+        }
+    };
+    const findUser = async () => {
+        try {
+            const q = query(collection(firestore, 'users'), where('email', '==', productData.emailUser));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                setUser({
+                    ...data,
+                    id: data.id,
+                    avatar: data.avatar
+                });
+            });
+        } catch (error) {
+            console.error('Error finding user:', error);
+        }
+    };
+    useEffect(() => {
+        if (params.id && !paramCheck) {
+            fetchProductData();
+            setText(`/product/${params.id}`);
+            setParamCheck(true);
+        }
+    }, [params, paramCheck]);
+    useEffect(() => {
+        if (productData.emailUser) {
+            findUser();
+        }
+    }, [productData.emailUser]);
+    useEffect(() => {
+        if (user.id && currentUser.uid) {
+            handleSelect();
+        }
+    }, [user.id, currentUser.id]);
+    //
+    const handleSelect = async () => {
+        const combinedId = currentUser.uid > user.id ? currentUser.uid + user.id : user.id + currentUser.uid;
+        try {
+            const res = await getDoc(doc(firestore, 'chats', combinedId));
+
+            if (res.exists()) {
+                // Nếu combinedId đã tồn tại, thực hiện các hành động cần thiết
+                dispatch({ type: 'CHANGE_CHAT_USER', load: user, payload: combinedId });
+            } else {
+                //create a chat in chats collection
+                await setDoc(doc(firestore, 'chats', combinedId), { messages: [] });
+
+                //create user chats
+                await updateDoc(doc(firestore, 'userChats', currentUser.uid), {
+                    [combinedId + '.userInfo']: {
+                        id: user.id,
+                        name: user.name,
+                        avatar: user.avatar
+                    },
+                    [combinedId + '.date']: serverTimestamp()
+                });
+
+                await updateDoc(doc(firestore, 'userChats', user.id), {
+                    [combinedId + '.userInfo']: {
+                        id: currentUser.id,
+                        name: currentUser.name,
+                        avatar: currentUser.avatar
+                    },
+                    [combinedId + '.date']: serverTimestamp()
+                });
+                dispatch({ type: 'CHANGE_CHAT_USER', load: user, payload: combinedId });
+            }
+        } catch (err) {
+            console.error('Error checking combinedId:', err);
+        }
+
+        setUser([]);
     };
 
     return (
@@ -140,6 +244,7 @@ const Input = () => {
                         placeholder="Type something..."
                         onChange={(e) => setText(e.target.value)}
                         value={text}
+                        onKeyDown={handleKeyDown}
                     />
                     <Box className="send" sx={{ display: 'flex', alignItems: 'center' }}>
                         <input multiple accept="image/*" type="file" style={{ display: 'none' }} id="file" onChange={handleChangeImages} />

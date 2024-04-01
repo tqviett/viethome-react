@@ -48,15 +48,15 @@ const ViewProduct = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (currentUser.email) {
+        if (productData.emailUser) {
             findUser();
         }
-    }, [currentUser.email]);
+    }, [productData.emailUser]);
 
     //Function
     const findUser = async () => {
         try {
-            const q = query(collection(firestore, 'users'), where('email', '==', currentUser.email));
+            const q = query(collection(firestore, 'users'), where('email', '==', productData.emailUser));
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
@@ -169,7 +169,7 @@ const ViewProduct = () => {
             </Helmet>
             <Container>
                 <Typography variant="h4" sx={{ mb: 5 }}>
-                    Xem sản phẩm
+                    Thông tin chi tiết:
                 </Typography>
                 <Stack
                     sx={{
@@ -232,6 +232,13 @@ const ViewProduct = () => {
                                 <Typography variant="h1" sx={{ mb: 1 }}>
                                     Tên sản phẩm: {productData.name}
                                 </Typography>
+                                {currentUser.email === productData.emailUser && (
+                                    <Stack justifyContent="right" alignItems="center" direction="row" spacing={1} sx={{ display: 'flex' }}>
+                                        <Button color="primary" component={Link} to={`/user/product/edit/${params.id}`} variant="contained">
+                                            Chỉnh sửa
+                                        </Button>
+                                    </Stack>
+                                )}
                                 <Typography variant="body1" sx={{ mb: 1 }}>
                                     Số lượng: {categoryObject.total}
                                 </Typography>
@@ -253,13 +260,6 @@ const ViewProduct = () => {
                             </CardContent>
 
                             {/* //cần sửa quyền ẩn hiện nút CHỈNH SỬA */}
-                            {currentUser.email === productData.emailUser && (
-                                <Stack justifyContent="right" alignItems="center" direction="row" spacing={1} sx={{ display: 'flex' }}>
-                                    <Button color="secondary" component={Link} to={`/user/product/edit/${params.id}`} variant="contained">
-                                        Chỉnh sửa
-                                    </Button>
-                                </Stack>
-                            )}
                         </Stack>
                         <Stack direction="row" spacing={2}></Stack>
                     </Stack>
@@ -291,16 +291,12 @@ const ViewProduct = () => {
                                             {dataUser.phone}
                                         </Typography>
                                     </Stack>
-                                    <ListItemButton sx={{ borderRadius: 1 }} onClick={() => navigate('/')}>
+                                    <ListItemButton sx={{ borderRadius: 1 }} onClick={() => navigate(`/messages/${params.id}`)}>
                                         <ListItemIcon>
                                             <IconMessage stroke={1.5} size="1.3rem" />
                                         </ListItemIcon>
-                                        <ListItemText secondary={<Typography variant="contained">Tin nhắn</Typography>} />
+                                        <ListItemText secondary={<Typography variant="contained">Nhắn tin ngay</Typography>} />
                                     </ListItemButton>
-                                    {/* <Button color="success" component={Link} to={'/'} variant="contained">
-                                        <IconMessage />
-                                        Nhắn tin ngay
-                                    </Button> */}
                                 </Stack>
                             </CardContent>
                         </Box>

@@ -1,4 +1,4 @@
-import { onSnapshot, collection, query, where, getDocs, doc } from 'firebase/firestore';
+import { onSnapshot, collection, query, where, getDoc, getDocs, doc } from 'firebase/firestore';
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from 'context/AuthContext';
 import { ChatContext } from 'context/ChatContext';
@@ -32,9 +32,9 @@ const Chats = () => {
                 ?.sort((a, b) => b[1].date - a[1].date)
                 .map((chat) => (
                     <Button className="userChat" key={chat[0]} onClick={() => handleSelect(chat[1].userInfo)}>
-                        <Avatar src={chat[1].userInfo.photoURL} alt="" />
+                        <Avatar src={chat[1].userInfo.avatar} alt="" />
                         <Stack className="userChatInfo">
-                            <span>{chat[1].userInfo.displayName}</span>
+                            <span>{chat[1].userInfo.name}</span>
                             <Typography sx={{ color: 'silver' }} noWrap>
                                 {chat[1].lastMessage?.text}
                             </Typography>

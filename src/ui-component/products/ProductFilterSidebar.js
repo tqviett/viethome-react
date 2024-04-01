@@ -19,6 +19,7 @@ import {
 import Iconify from 'components/iconify';
 import Scrollbar from 'components/scrollbar';
 import { ColorMultiPicker } from 'components/color-utils';
+import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons';
 
 // ----------------------------------------------------------------------
 
@@ -40,8 +41,8 @@ ShopFilterSidebar.propTypes = {
 export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFilter }) {
     return (
         <>
-            <Button disableRipple color="inherit" endIcon={<Iconify icon="ic:round-filter-list" />} onClick={onOpenFilter}>
-                Phân loại&nbsp;
+            <Button disableRipple color="inherit" onClick={onOpenFilter}>
+                <IconAdjustmentsHorizontal stroke={1.5} size="1.3rem" />
             </Button>
 
             <Drawer

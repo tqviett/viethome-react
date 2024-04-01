@@ -49,7 +49,6 @@ const ProfileSection = () => {
     const [notification, setNotification] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [open, setOpen] = useState(false);
-    const [dataForm, setDataForm] = useState([]);
     const { currentUser } = useContext(AuthContext);
 
     /**
@@ -85,8 +84,8 @@ const ProfileSection = () => {
     const [role, setRole] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
     useEffect(() => {
-        if (dataForm) {
-            const roles = dataForm.role;
+        if (currentUser) {
+            const roles = currentUser.role;
             setIsAdmin(roles === 'admin');
             if (roles == 'user') {
                 setRole('Người dùng');
@@ -94,29 +93,7 @@ const ProfileSection = () => {
                 setRole('Quản trị viên');
             }
         }
-    }, [dataForm]);
-
-    useEffect(() => {
-        if (currentUser.email) {
-            findUser();
-        }
-    }, [currentUser.email]);
-
-    const findUser = async () => {
-        try {
-            const q = query(collection(firestore, 'users'), where('email', '==', currentUser.email));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                const dataProduct = doc.data();
-                setDataForm({
-                    ...dataProduct,
-                    avatar: dataProduct.avatar
-                });
-            });
-        } catch (error) {
-            console.error('Error finding user:', error);
-        }
-    };
+    }, [currentUser]);
 
     return (
         <>
@@ -142,7 +119,7 @@ const ProfileSection = () => {
                 }}
                 icon={
                     <Avatar
-                        src={dataForm.avatar}
+                        src={currentUser.avatar}
                         sx={{
                             ...theme.typography.mediumAvatar,
                             margin: '8px -16px 8px 8px !important',
@@ -189,7 +166,7 @@ const ProfileSection = () => {
                                             <Stack direction="row" spacing={0.5} alignItems="center">
                                                 <Typography variant="h4">Xin chào,</Typography>
                                                 <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                                                    {dataForm.name}
+                                                    {currentUser.name}
                                                 </Typography>
                                             </Stack>
                                             <Typography variant="subtitle2">{role}</Typography>

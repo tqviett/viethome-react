@@ -28,34 +28,13 @@ const Header = ({ handleLeftDrawerToggle }) => {
     // lấy thông tin người dùng từ Current User
     const [isAdmin, setIsAdmin] = useState(false);
     const [haveRole, setHaveRole] = useState(false);
-    const [dataForm, setDataForm] = useState([]);
-    const findUser = async () => {
-        try {
-            const q = query(collection(firestore, 'users'), where('email', '==', currentUser.email));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                const dataProduct = doc.data();
-                setDataForm({
-                    ...dataProduct,
-                    avatar: dataProduct.avatar
-                });
-            });
-        } catch (error) {
-            console.error('Error finding user:', error);
-        }
-    };
     useEffect(() => {
-        if (currentUser.email) {
-            findUser();
-        }
-    }, [currentUser.email]);
-    useEffect(() => {
-        if (dataForm) {
-            const role = dataForm.role;
+        if (currentUser) {
+            const role = currentUser.role;
             setIsAdmin(role === 'admin');
             setHaveRole('true');
         }
-    }, [dataForm]);
+    }, [currentUser]);
     return (
         <>
             {/* logo & toggler button */}

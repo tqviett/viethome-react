@@ -47,6 +47,10 @@ const MainRoutes = {
             element: <Products />
         },
         {
+            path: '/product',
+            element: <Products />
+        },
+        {
             path: '/product/:id',
             element: <ViewProducts />
         },
@@ -60,6 +64,10 @@ const MainRoutes = {
         },
         {
             path: '/messages',
+            element: <Chats />
+        },
+        {
+            path: '/messages/:id',
             element: <Chats />
         },
 

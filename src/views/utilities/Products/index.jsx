@@ -51,19 +51,19 @@ export default function ProductsPage() {
             </Helmet>
 
             <Container>
-                <Typography variant="h4" sx={{ mb: 5 }}>
+                {/* <Typography variant="h4" sx={{ mb: 5 }}>
                     Sảm phẩm
-                </Typography>
+                </Typography> */}
 
                 <Stack direction="row" flexWrap="wrap-reverse" alignItems="center" justifyContent="space-between" sx={{ mb: 5 }}>
                     <SearchSection />
                     <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>
-                        <ProductFilterSidebar
+                        {/* <ProductFilterSidebar
                             bar
                             openFilter={openFilter}
                             onOpenFilter={handleOpenFilter}
                             onCloseFilter={handleCloseFilter}
-                        />
+                        /> */}
                         <ProductSort />
                     </Stack>
                 </Stack>
