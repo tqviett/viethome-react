@@ -22,7 +22,7 @@ import { Button, IconButton, Box, Stack, ImageList, ImageListItem, TextField } f
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { styled, useTheme } from '@mui/material/styles';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { FIRESTORE } from '../../../constants';
 
 const Input = () => {
@@ -100,6 +100,7 @@ const Input = () => {
 
                     // Sau khi gửi tin nhắn thành công, cập nhật state của text thành chuỗi rỗng
                     setText('');
+                    setImg([]);
                 } catch (error) {
                     console.error(error);
                 }
@@ -112,7 +113,6 @@ const Input = () => {
             handleSend();
         }
     };
-
     const [productData, setProductData] = useState([]);
     const fetchProductData = async () => {
         try {
@@ -142,13 +142,16 @@ const Input = () => {
             console.error('Error finding user:', error);
         }
     };
+    const location = useLocation();
     useEffect(() => {
         if (params.id && !paramCheck) {
             fetchProductData();
-            setText(`/product/${params.id}`);
+            const previousUrl = location.state?.from || '';
+            console.log('url:', previousUrl);
+            setText(previousUrl);
             setParamCheck(true);
         }
-    }, [params, paramCheck]);
+    }, [params, paramCheck, location.state]);
     useEffect(() => {
         if (productData.emailUser) {
             findUser();
@@ -240,6 +243,8 @@ const Input = () => {
                 <Box sx={{ width: '100%', display: ' flex' }}>
                     <TextField
                         fullWidth
+                        multiline
+                        maxRows={4}
                         type="text"
                         placeholder="Type something..."
                         onChange={(e) => setText(e.target.value)}

@@ -17,7 +17,7 @@ import {
     ListItemButton,
     ListItemIcon
 } from '@mui/material';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { getDoc, doc, getDocs, query, collection, where } from 'firebase/firestore';
 import { firestore } from '../../../firebase';
 import { FIRESTORE } from '../../../constants';
@@ -46,6 +46,12 @@ const ViewProduct = () => {
     const { currentUser } = useContext(AuthContext);
     const [dataUser, setDataUser] = useState([]);
     const navigate = useNavigate();
+    const location = useLocation();
+    const viewProductUrl = location.pathname;
+    console.log(window.location.href);
+    const handleSendMessage = () => {
+        navigate(`/messages/${params.id}`, { state: { from: window.location.href } });
+    };
 
     useEffect(() => {
         if (productData.emailUser) {
@@ -291,7 +297,7 @@ const ViewProduct = () => {
                                             {dataUser.phone}
                                         </Typography>
                                     </Stack>
-                                    <ListItemButton sx={{ borderRadius: 1 }} onClick={() => navigate(`/messages/${params.id}`)}>
+                                    <ListItemButton sx={{ borderRadius: 1 }} onClick={handleSendMessage}>
                                         <ListItemIcon>
                                             <IconMessage stroke={1.5} size="1.3rem" />
                                         </ListItemIcon>

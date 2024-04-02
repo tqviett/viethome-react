@@ -88,45 +88,63 @@ const Message = ({ message }) => {
             return `${elapsedTimeInDays} day${elapsedTimeInDays > 1 ? 's' : ''} ago`;
         }
     };
+    // Function to detect URLs in the text and return clickable links
+    const detectUrls = (text) => {
+        const urlRegex = /(https?:\/\/[^ ]+)/g;
+        const urls = text.match(urlRegex);
+
+        if (urls) {
+            return text.replace(urlRegex, (match) => `<a href="${match}" target="_blank" rel="noopener noreferrer">${match}</a>`);
+        }
+
+        return text;
+    };
+
+    const messageContent = () => {
+        if (message.text) {
+            const messageText = detectUrls(message.text);
+            return <Typography dangerouslySetInnerHTML={{ __html: messageText }} />;
+        }
+
+        return message.text;
+    };
 
     return (
         <Container className={`message ${message.senderId === currentUser.uid && 'owner'}`} ref={ref}>
             <Stack className="messageInfo" direction="row" alignItems="center" spacing={1}>
                 <Avatar src={message.senderId === currentUser.uid ? dataForm?.avatar : data.user.avatar} alt={message.senderId} />
-                <Typography>{calculateElapsedTime(message.date)}</Typography>
             </Stack>
-            <Stack className="messageContent" direction="row" sx={{ width: '300px' }}>
-                {message.text && (
-                    <Typography variant="body1" sx={{ wordWrap: 'break-word' }}>
-                        {message.text}
-                    </Typography>
-                )}
-                <Box>
-                    {message.img &&
-                        message.img.map((image, index) => (
-                            <img
-                                key={index}
-                                src={image}
-                                alt=""
-                                style={{
-                                    width: '90px',
-                                    height: '90px',
-                                    objectFit: 'cover',
-                                    margin: '4px 0'
-                                }}
-                                onClick={() => handleImageClick(image, index)} // Add onClick event
+            <Stack className="messageTimeContent">
+                <Stack className="messageContent" direction="row" sx={{ width: '300px' }}>
+                    {messageContent()}
+                    <Box>
+                        {message.img &&
+                            message.img.map((image, index) => (
+                                <img
+                                    key={index}
+                                    src={image}
+                                    alt=""
+                                    style={{
+                                        width: '90px',
+                                        height: '90px',
+                                        objectFit: 'cover',
+                                        margin: '4px 0'
+                                    }}
+                                    onClick={() => handleImageClick(image, index)} // Add onClick event
+                                />
+                            ))}
+                        {message.img && (
+                            <Chip
+                                label="Image"
+                                variant="outlined"
+                                size="small"
+                                color="primary"
+                                sx={{ position: 'absolute', bottom: 10, right: 10 }}
                             />
-                        ))}
-                    {message.img && (
-                        <Chip
-                            label="Image"
-                            variant="outlined"
-                            size="small"
-                            color="primary"
-                            sx={{ position: 'absolute', bottom: 10, right: 10 }}
-                        />
-                    )}
-                </Box>
+                        )}
+                    </Box>
+                </Stack>
+                <Typography>{calculateElapsedTime(message.date)}</Typography>
             </Stack>
 
             <Modal open={fullScreenImageIndex !== null} onClose={handleCloseFullScreenImage} onKeyDown={handleKeyDown}>

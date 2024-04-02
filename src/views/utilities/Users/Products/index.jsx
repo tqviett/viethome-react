@@ -64,7 +64,7 @@ export default function ProductsPage() {
                 </Typography>
 
                 <Stack direction="row" flexWrap="wrap-reverse" alignItems="center" justifyContent="space-between" sx={{ mb: 5 }}>
-                    <Button color="secondary" variant="contained" endIcon={<AddIcon />} onClick={() => navigate('/product/create')}>
+                    <Button color="secondary" variant="contained" endIcon={<AddIcon />} onClick={() => navigate('/user/product/create')}>
                         Thêm mới sản phẩm
                     </Button>
                     <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>

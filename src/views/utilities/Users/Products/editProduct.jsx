@@ -103,9 +103,10 @@ const EditProduct = () => {
         districtIds && fetchPublicWard(districtIds);
     }, [districtIds]);
     useEffect(() => {
-        if (params?.id) findProduct();
-        if (currentUser.email !== dataForm.emailUser) {
-            navigate('/page-not-found');
+        if (params?.id) {
+            if (currentUser.email !== dataForm.emailUser) {
+                navigate('/page-not-found');
+            }
         }
     }, [params, currentUser, dataForm]);
 

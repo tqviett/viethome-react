@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 // material-ui
 import { useTheme, styled } from '@mui/material/styles';
-import { Avatar, Box, ButtonBase, Card, Grid, InputAdornment, OutlinedInput, Popper } from '@mui/material';
+import { Avatar, Box, ButtonBase, Card, Grid, InputAdornment, OutlinedInput, Popper, Stack } from '@mui/material';
 
 // third-party
 import PopupState, { bindPopper, bindToggle } from 'material-ui-popup-state';
@@ -183,7 +183,7 @@ const SearchSection = () => {
                     }
                     endAdornment={
                         <InputAdornment position="end">
-                            <ButtonBase sx={{ borderRadius: '12px' }}>
+                            <Stack sx={{ borderRadius: '12px' }}>
                                 <HeaderAvatarStyle variant="rounded">
                                     <ProductFilterSidebar
                                         bar
@@ -193,7 +193,7 @@ const SearchSection = () => {
                                     />
                                     <IconAdjustmentsHorizontal stroke={1.5} size="1.3rem" />
                                 </HeaderAvatarStyle>
-                            </ButtonBase>
+                            </Stack>
                         </InputAdornment>
                     }
                     aria-describedby="search-helper-text"
