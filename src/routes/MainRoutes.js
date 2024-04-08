@@ -51,6 +51,10 @@ const MainRoutes = {
             element: <Products />
         },
         {
+            path: '/products/:id',
+            element: <Products />
+        },
+        {
             path: '/product/:id',
             element: <ViewProducts />
         },

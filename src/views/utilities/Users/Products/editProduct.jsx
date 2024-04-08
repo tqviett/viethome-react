@@ -35,7 +35,11 @@ import { districtApi, wardApi } from 'api/clients/provinceService';
 import { useContext } from 'react';
 import { AuthContext } from 'context/AuthContext';
 
-const listType = ['Phòng trọ', 'Nhà trọ', 'Chung cư mini'];
+const listType = [
+    { value: 'phongTro', label: 'Phòng trọ' },
+    { value: 'nhaTro', label: 'Nhà trọ' },
+    { value: 'chungCuMini', label: 'Chung cư mini' }
+];
 const INIT_DATA = {
     name: '',
     price: '',

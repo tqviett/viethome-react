@@ -33,7 +33,12 @@ import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import { styled, useTheme } from '@mui/material/styles';
 
 import { districtApi, wardApi } from 'api/clients/provinceService';
-const listType = ['Phòng trọ', 'Nhà trọ', 'Chung cư mini'];
+const listType = [
+    { value: 'phongTro', label: 'Phòng trọ' },
+    { value: 'nhaTro', label: 'Nhà trọ' },
+    { value: 'chungCuMini', label: 'Chung cư mini' }
+];
+//const listType = ['Phòng trọ', 'Nhà trọ', 'Chung cư mini'];
 const INIT_DATA = {
     name: '',
     price: '',

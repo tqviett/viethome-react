@@ -8,18 +8,25 @@ import Iconify from 'components/iconify';
 
 const SORT_BY_OPTIONS = [
     { value: 'Newest', label: 'Đăng gần đây' },
-    { value: 'priceDesc', label: 'Giá: cao -> thấp' },
-    { value: 'priceAsc', label: 'Giá: thấp -> cao' }
+    { value: 'priceDesc', label: 'Giá: Giảm dần' },
+    { value: 'priceAsc', label: 'Giá: Tăng dần' }
 ];
 
-export default function ShopProductSort() {
+export default function ShopProductSort({ onSortChange }) {
     const [open, setOpen] = useState(null);
+    const [selectedSortBy, setSelectedSortBy] = useState('Newest'); // State lưu giữ lựa chọn hiện tại
 
     const handleOpen = (event) => {
         setOpen(event.currentTarget);
     };
 
     const handleClose = () => {
+        setOpen(null);
+    };
+
+    const handleSort = (sortBy) => {
+        setSelectedSortBy(sortBy); // Cập nhật lựa chọn hiện tại
+        onSortChange(sortBy);
         setOpen(null);
     };
 
@@ -30,10 +37,11 @@ export default function ShopProductSort() {
                 disableRipple
                 onClick={handleOpen}
                 endIcon={<Iconify icon={open ? 'eva:chevron-up-fill' : 'eva:chevron-down-fill'} />}
+                sx={{ with: '200px' }}
             >
-                Sắp xếp :&nbsp;
-                <Typography component="span" variant="subtitle2" sx={{ color: 'text.secondary' }}>
-                    Mới nhất
+                Sắp xếp:&nbsp;
+                <Typography component="span" variant="subtitle2" sx={{ color: 'text.secondary', width: '100px' }}>
+                    {SORT_BY_OPTIONS.find((option) => option.value === selectedSortBy)?.label} {/* Hiển thị lựa chọn đã chọn */}
                 </Typography>
             </Button>
             <Menu
@@ -45,7 +53,12 @@ export default function ShopProductSort() {
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
                 {SORT_BY_OPTIONS.map((option) => (
-                    <MenuItem key={option.value} selected={option.value === 'newest'} onClick={handleClose} sx={{ typography: 'body2' }}>
+                    <MenuItem
+                        key={option.value}
+                        selected={option.value === selectedSortBy}
+                        onClick={() => handleSort(option.value)}
+                        sx={{ typography: 'body2' }}
+                    >
                         {option.label}
                     </MenuItem>
                 ))}

@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 // @mui
 import {
@@ -13,18 +14,25 @@ import {
     IconButton,
     Typography,
     RadioGroup,
-    FormControlLabel
+    FormControlLabel,
+    Autocomplete,
+    TextField
 } from '@mui/material';
 // components
 import Iconify from 'components/iconify';
 import Scrollbar from 'components/scrollbar';
 import { ColorMultiPicker } from 'components/color-utils';
-import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons';
+import { districtApi, wardApi } from 'api/clients/provinceService';
+import { useParams } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
 
-export const FILTER_TYPE_OPTIONS = ['Phòng trọ', 'Nhà trọ', 'Chung cư mini'];
-export const FILTER_DISTRICT_OPTIONS = ['A', 'B', 'C', 'D'];
+export const FILTER_TYPE_OPTIONS = [
+    { value: 'phongTro', label: 'Phòng trọ' },
+    { value: 'nhaTro', label: 'Nhà trọ' },
+    { value: 'chungCuMini', label: 'Chung cư mini' }
+];
+
 export const FILTER_PRICE_OPTIONS = [
     { value: 'below', label: 'Dưới 3tr' },
     { value: 'between', label: 'Từ 3tr-5tr' },
@@ -35,14 +43,80 @@ export const FILTER_PRICE_OPTIONS = [
 ShopFilterSidebar.propTypes = {
     openFilter: PropTypes.bool,
     onOpenFilter: PropTypes.func,
-    onCloseFilter: PropTypes.func
+    onCloseFilter: PropTypes.func,
+    fillFilter: PropTypes.object,
+    handleFilterChange: PropTypes.func
 };
 
-export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFilter }) {
+export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFilter, filters, handleFilterChange }) {
+    const [district, setDistrict] = useState([]);
+    const [districtIds, setDistrictIds] = useState([]);
+    const [ward, setWard] = useState([]);
+    const params = useParams();
+
+    useEffect(() => {
+        const fetchPublicDistrict = async () => {
+            const response = await districtApi();
+            if (response.status === 200) {
+                const dataDistrict = response.data;
+                const districts = dataDistrict.results.map((district) => ({
+                    id: district.district_id,
+                    name: district.district_name
+                }));
+                setDistrict(districts);
+            }
+        };
+        fetchPublicDistrict();
+    }, []);
+    useEffect(() => {
+        const fetchPublicWard = async () => {
+            if (districtIds.length) {
+                const response = await wardApi(districtIds);
+                if (response.status === 200) {
+                    const dataWard = response.data;
+                    const wards = dataWard.results.map((ward) => ({
+                        id: ward.ward_id,
+                        name: ward.ward_name
+                    }));
+                    setWard(wards);
+                }
+            }
+        };
+        fetchPublicWard(districtIds);
+    }, [districtIds]);
+    const handleSelectDistrict = (key, value) => {
+        if (key === 'district') {
+            const selectedDistrictName = value ? value.name : '';
+            const selectedDistrictId = value ? value.id : '';
+            setDistrictIds(selectedDistrictId);
+            handleFilterChange('district', selectedDistrictName);
+        }
+    };
+    const handleSelectWard = (key, value) => {
+        if (key === 'ward') {
+            const selectedWardName = value ? value.name : '';
+            handleFilterChange('ward', selectedWardName);
+        }
+    };
+
+    const handleSelectType = (value) => {
+        handleFilterChange('type', value);
+    };
+
+    const handleSelectPrice = (value) => {
+        handleFilterChange('price', value);
+    };
+    const handleResetFilters = () => {
+        handleFilterChange('type', '');
+        handleFilterChange('district', '');
+        handleFilterChange('ward', '');
+        handleFilterChange('price', '');
+    };
+
     return (
         <>
-            <Button disableRipple color="inherit" onClick={onOpenFilter}>
-                <IconAdjustmentsHorizontal stroke={1.5} size="1.3rem" />
+            <Button disableRipple color="inherit" endIcon={<Iconify icon="ic:round-filter-list" />} onClick={onOpenFilter}>
+                Phân loại&nbsp;
             </Button>
 
             <Drawer
@@ -67,25 +141,63 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
                 <Scrollbar>
                     <Stack spacing={3} sx={{ p: 3 }}>
                         <div>
-                            <Typography variant="subtitle1" gutterBottom>
-                                Loại phòng
-                            </Typography>
-                            <FormGroup>
-                                {FILTER_TYPE_OPTIONS.map((item) => (
-                                    <FormControlLabel key={item} control={<Checkbox />} label={item} />
-                                ))}
-                            </FormGroup>
+                            {!params?.id && (
+                                <>
+                                    <Typography variant="subtitle1" gutterBottom>
+                                        Loại phòng
+                                    </Typography>
+                                    <RadioGroup>
+                                        {FILTER_TYPE_OPTIONS.map((item) => (
+                                            <FormControlLabel
+                                                key={item.value}
+                                                value={item.value}
+                                                control={<Radio />}
+                                                label={item.label}
+                                                onChange={() => handleSelectType(item.value)}
+                                            />
+                                        ))}
+                                    </RadioGroup>
+                                </>
+                            )}
                         </div>
 
                         <div>
                             <Typography variant="subtitle1" gutterBottom>
-                                Khu vực
+                                Quận/Huyện
                             </Typography>
-                            <RadioGroup>
-                                {FILTER_DISTRICT_OPTIONS.map((item) => (
-                                    <FormControlLabel key={item} value={item} control={<Radio />} label={item} />
+                            {/* <Select size="small" sx={{ width: '200px' }} value={districtIds} onChange={handleSelectDistrict}>
+                                {district.map((district) => (
+                                    <MenuItem key={district.id} value={district.id}>
+                                        {district.name}
+                                    </MenuItem>
                                 ))}
-                            </RadioGroup>
+                            </Select> */}
+                            <Autocomplete
+                                id="district"
+                                size="small"
+                                options={district}
+                                getOptionLabel={(option) => (option ? option.name : '')}
+                                clearText=""
+                                onChange={(e, value) => handleSelectDistrict('district', value || null)}
+                                renderInput={(params) => <TextField {...params} />}
+                            />
+
+                            {districtIds !== '' && (
+                                <>
+                                    <Typography variant="subtitle1" gutterBottom>
+                                        Phường/Xã
+                                    </Typography>
+                                    <Autocomplete
+                                        id="ward"
+                                        size="small"
+                                        options={ward}
+                                        getOptionLabel={(option) => (option ? option.name : '')}
+                                        clearText=""
+                                        onChange={(e, value) => handleSelectWard('ward', value || null)} // Truyền null nếu không có giá trị được chọn
+                                        renderInput={(params) => <TextField {...params} />}
+                                    />
+                                </>
+                            )}
                         </div>
 
                         <div>
@@ -94,7 +206,13 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
                             </Typography>
                             <RadioGroup>
                                 {FILTER_PRICE_OPTIONS.map((item) => (
-                                    <FormControlLabel key={item.value} value={item.value} control={<Radio />} label={item.label} />
+                                    <FormControlLabel
+                                        key={item.value}
+                                        value={item.value}
+                                        control={<Radio />}
+                                        label={item.label}
+                                        onChange={() => handleSelectPrice(item.value)}
+                                    />
                                 ))}
                             </RadioGroup>
                         </div>
@@ -108,6 +226,7 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
                         type="submit"
                         color="inherit"
                         variant="outlined"
+                        onClick={handleResetFilters}
                         startIcon={<Iconify icon="ic:round-clear-all" />}
                     >
                         Loại bỏ lọc

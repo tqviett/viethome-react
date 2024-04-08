@@ -29,6 +29,11 @@ export function fData(number) {
 
     return result(format, '.0');
 }
+export function fTwoDigits(number) {
+    const formattedNumber = (number / 1000000).toFixed(4);
+    const truncatedNumber = formattedNumber.slice(0, -3);
+    return truncatedNumber;
+}
 
 function result(format, key = '.00') {
     const isInteger = format.includes(key);

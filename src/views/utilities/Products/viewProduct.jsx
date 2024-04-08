@@ -19,15 +19,34 @@ import {
 } from '@mui/material';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { getDoc, doc, getDocs, query, collection, where } from 'firebase/firestore';
-import { firestore } from '../../../firebase';
-import { FIRESTORE } from '../../../constants';
+
 import { Helmet } from 'react-helmet-async';
 import { styled, useTheme } from '@mui/material/styles';
 import MobileStepper from '@mui/material/MobileStepper';
-import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
-import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import PaidIcon from '@mui/icons-material/Paid';
+import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import { IconMessage } from '@tabler/icons';
+import HomeIcon from '@mui/icons-material/Home';
+
+// context
 import { AuthContext } from 'context/AuthContext';
+
+//Ui-Component
+import { ProductList, ProductNewUpload } from 'ui-component/products';
+import { ProductFilterView } from 'ui-component/products';
+
+import NotFoundView from 'views/error';
+import { fTwoDigits } from 'utils/formatNumber';
+import { formatDate } from 'utils/formatDate';
+import { firestore } from '../../../firebase';
+import { FIRESTORE } from '../../../constants';
+
+//google Map
+import Map from 'ui-component/Map';
+import { geocodeByAddress, getLatLng } from 'react-google-places-autocomplete';
+import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 
 const StyledProductImg = styled('img')({
     top: 0,
@@ -36,7 +55,6 @@ const StyledProductImg = styled('img')({
     objectFit: 'contain',
     position: 'absolute'
 });
-
 const ViewProduct = () => {
     const theme = useTheme();
     const [productData, setProductData] = useState({});
@@ -45,12 +63,13 @@ const ViewProduct = () => {
     const [activeStep, setActiveStep] = React.useState(0);
     const { currentUser } = useContext(AuthContext);
     const [dataUser, setDataUser] = useState([]);
+    const [products, setProducts] = useState([]);
     const navigate = useNavigate();
-    const location = useLocation();
-    const viewProductUrl = location.pathname;
-    console.log(window.location.href);
+    const [coords, setCoords] = useState(null);
+
+    const viewProductUrl = window.location.href;
     const handleSendMessage = () => {
-        navigate(`/messages/${params.id}`, { state: { from: window.location.href } });
+        navigate(`/messages/${params.id}`, { state: { from: viewProductUrl } });
     };
 
     useEffect(() => {
@@ -95,6 +114,43 @@ const ViewProduct = () => {
             fetchProductData();
         }
     }, [params]);
+    const findProductbyUser = async () => {
+        try {
+            const docRefs = await getDocs(collection(firestore, FIRESTORE.PRODUCTS));
+            const res = [];
+
+            docRefs.forEach((product) => {
+                const data = product.data();
+                if (data.emailUser === dataUser.email && product.id !== params.id) {
+                    res.push({
+                        ...data,
+                        id: product.id
+                    });
+                }
+            });
+
+            setProducts(res);
+            return res;
+        } catch (error) {
+            console.error('Error finding products by user:', error);
+            return <NotFoundView />;
+        }
+    };
+
+    useEffect(() => {
+        findProductbyUser();
+    }, [dataUser.email, params.id]);
+
+    // useEffect(() => {
+    //     // const positionObj = JSON.parse(productData.category);
+    //     // const position = `${positionObj[0].location}, ${positionObj[0].ward}, ${positionObj[0].district}, Hà Nội`;
+    //     const add = 'Hà Nội';
+    //     const getCoords = async () => {
+    //         const results = await geocodeByAddress('add');
+    //         console.log('Geocode results:', results);
+    //     };
+    //     getCoords();
+    // }, []);
 
     if (loading) {
         return (
@@ -158,25 +214,31 @@ const ViewProduct = () => {
         );
     };
 
-    const categoryJson = productData.category;
     let categoryArray;
     try {
-        categoryArray = JSON.parse(categoryJson);
+        categoryArray = JSON.parse(productData.category);
     } catch (e) {
         console.error('Error parsing category JSON:', e);
         return null;
     }
+    //Map with category
     const categoryObject = categoryArray[0];
+    const location = categoryObject.location;
+    const district = categoryObject.district;
+    const ward = categoryObject.ward;
 
+    const descriptionSetHtml = () => {
+        return { __html: productData.description };
+    };
     return (
         <>
             <Helmet>
                 <title> Dashboard: Product-info | VIET-HOME </title>
             </Helmet>
             <Container>
-                <Typography variant="h4" sx={{ mb: 5 }}>
+                {/* <Typography variant="h4" sx={{ mb: 5 }}>
                     Thông tin chi tiết:
-                </Typography>
+                </Typography> */}
                 <Stack
                     sx={{
                         border: '1px solid #ffff',
@@ -215,10 +277,10 @@ const ViewProduct = () => {
                                 <Card sx={{ height: 50 }}>
                                     <CardActions>
                                         <Button color="secondary" size="small">
-                                            Share
+                                            Chia sẻ
                                         </Button>
                                         <Button color="secondary" size="small">
-                                            Learn More
+                                            Yêu thích
                                         </Button>
                                     </CardActions>
                                 </Card>
@@ -235,7 +297,7 @@ const ViewProduct = () => {
                             }}
                         >
                             <CardContent>
-                                <Typography variant="h1" sx={{ mb: 1 }}>
+                                <Typography variant="h1" sx={{ mb: 1 }} color="secondary">
                                     Tên sản phẩm: {productData.name}
                                 </Typography>
                                 {currentUser.email === productData.emailUser && (
@@ -245,29 +307,169 @@ const ViewProduct = () => {
                                         </Button>
                                     </Stack>
                                 )}
-                                <Typography variant="body1" sx={{ mb: 1 }}>
-                                    Số lượng: {categoryObject.total}
+                                <HomeIcon fontSize="10px" sx={{ mr: 1 }} />
+                                Chuyên mục :
+                                <Typography
+                                    variant="subtitle1"
+                                    sx={{ mb: 2 }}
+                                    color="primary"
+                                    component={Link}
+                                    to={`/products/${productData.type.value}`}
+                                >
+                                    {productData.type.label}
+                                </Typography>
+                                <Typography variant="subtitle1" sx={{ mb: 1, mt: 1 }}>
+                                    <LocationOnIcon fontSize="body1" color="primary" sx={{ mr: 1 }} />
+                                    Địa chỉ:{location}
+                                </Typography>
+                                <Typography variant="subtitle1" sx={{ mb: 2, mt: 1 }}>
+                                    <PaidIcon fontSize="body1" color="error" sx={{ mr: 1 }} /> {/* Thay errorColor bằng màu của error */}
+                                    Giá: {fTwoDigits(productData.price)} Triệu/Tháng
+                                    <AspectRatioIcon fontSize="body1" sx={{ ml: 2, mr: 1 }} color="success" />
+                                    {productData.area} m²
+                                </Typography>
+                                <Typography variant="h4" component="h2" sx={{ mt: 3 }}>
+                                    Mô tả chi tiết:
                                 </Typography>
                                 <Typography variant="body1" sx={{ mb: 1 }}>
-                                    Số lượng đã bán: {categoryObject.sold}
+                                    <span dangerouslySetInnerHTML={descriptionSetHtml()} />
                                 </Typography>
-                                <Typography variant="body1" sx={{ mb: 1 }}>
-                                    Giá: {productData.price} VNĐ
+                                <Typography variant="h4" component="h2" sx={{ mt: 3, mb: 2 }}>
+                                    Đặc điểm tin đăng:
                                 </Typography>
-                                <Typography variant="body1" sx={{ mb: 1 }}>
-                                    Loại sản phẩm: {categoryObject.category}
+                                <Grid container spacing={2} sx={{ backgroundColor: '#f0f0f0', marginBottom: 2, alignItems: 'center' }}>
+                                    <Grid item xs={2}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            Khu vực :
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            cho thuê phòng trọ tại {district}
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                                <Grid container spacing={2} sx={{ marginBottom: 2, alignItems: 'center' }}>
+                                    <Grid item xs={2}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            Loại tin rao:
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            {productData.type.label}
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                                <Grid container spacing={2} sx={{ backgroundColor: '#f0f0f0', marginBottom: 2, alignItems: 'center' }}>
+                                    <Grid item xs={2}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            Đối tượng :
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            Tất cả mọi người
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                                <Grid container spacing={2} sx={{ marginBottom: 2, alignItems: 'center' }}>
+                                    <Grid item xs={2}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            Ngày đăng:
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            {formatDate(productData.created_at)}
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                                <Grid container spacing={2} sx={{ backgroundColor: '#f0f0f0', marginBottom: 2, alignItems: 'center' }}>
+                                    <Grid item xs={2}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            Ghi chú:
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            {productData.note}
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                                <Typography variant="h4" component="h2" sx={{ mt: 3, mb: 2 }}>
+                                    Thông tin liên hệ:
                                 </Typography>
-                                <Typography variant="body1" sx={{ mb: 1 }}>
-                                    Ghi chú: {productData.note}
+                                <Grid container spacing={2} sx={{ backgroundColor: '#f0f0f0', marginBottom: 2, alignItems: 'center' }}>
+                                    <Grid item xs={2}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            Liên hệ :
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            {dataUser.name}
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                                <Grid container spacing={2} sx={{ marginBottom: 2, alignItems: 'center' }}>
+                                    <Grid item xs={2}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            Số điện thoại:
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            {dataUser.phone}
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                                <Grid container spacing={2} sx={{ backgroundColor: '#f0f0f0', marginBottom: 2, alignItems: 'center' }}>
+                                    <Grid item xs={2}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            Zalo:
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body1" sx={{ mb: 1 }}>
+                                            {dataUser.phone}
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                                <Typography variant="h4" component="h2" sx={{ mt: 3, mb: 2 }}>
+                                    Bản Đồ:
                                 </Typography>
-                                <Typography variant="body1" sx={{ mb: 1 }}>
-                                    Mô tả: {productData.description}
+                                <Typography variant="body1" component="h2" sx={{ mt: 3, mb: 2 }}>
+                                    Địa chỉ: {location}, {ward}, {district}, Hà Nội
                                 </Typography>
+                                {/* <Map coords={coords} /> */}
                             </CardContent>
-
-                            {/* //cần sửa quyền ẩn hiện nút CHỈNH SỬA */}
                         </Stack>
-                        <Stack direction="row" spacing={2}></Stack>
+                        <Stack
+                            sx={{
+                                marginTop: 2,
+                                width: 700,
+                                boxShadow: 'rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px',
+                                borderRadius: 1,
+                                height: 'auto',
+                                display: 'flex'
+                            }}
+                        >
+                            <Container>
+                                <Typography variant="h4" sx={{ mb: 1, mt: 2 }}>
+                                    Một số nhà khác được giao bởi {dataUser.name} :
+                                </Typography>
+                                {products.length > 0 ? (
+                                    <>
+                                        <ProductList products={products} />
+                                    </>
+                                ) : (
+                                    <Typography variant="body1" color="text.secondary" sx={{ mb: 1, mt: 2 }}>
+                                        Hiện tại chưa có nè!!!
+                                    </Typography>
+                                )}
+                            </Container>
+                        </Stack>
                     </Stack>
 
                     <Stack
@@ -288,22 +490,58 @@ const ViewProduct = () => {
                             <CardContent>
                                 <Stack spacing={2} sx={{ alignItems: 'center' }}>
                                     <Avatar sx={{ height: '80px', width: '80px' }} src={dataUser.avatar} />
-                                    <Stack spacing={1} sx={{ textAlign: 'center' }}>
-                                        <Typography variant="h5">{dataUser.name}</Typography>
-                                        <Typography color="text.secondary" variant="body2">
-                                            {dataUser.role}
+                                    <Stack spacing={1}>
+                                        <Typography variant="h5" sx={{ textAlign: 'center' }}>
+                                            {dataUser.name}
                                         </Typography>
-                                        <Typography color="text.secondary" variant="body2">
-                                            {dataUser.phone}
+                                        <Typography color="text.secondary" variant="body2" sx={{ textAlign: 'left' }}>
+                                            Vai trò: {dataUser.role}
+                                        </Typography>
+                                        <Typography color="text.secondary" variant="body2" sx={{ textAlign: 'left' }}>
+                                            Số điện thoại: {dataUser.phone}
                                         </Typography>
                                     </Stack>
-                                    <ListItemButton sx={{ borderRadius: 1 }} onClick={handleSendMessage}>
-                                        <ListItemIcon>
-                                            <IconMessage stroke={1.5} size="1.3rem" />
-                                        </ListItemIcon>
-                                        <ListItemText secondary={<Typography variant="contained">Nhắn tin ngay</Typography>} />
-                                    </ListItemButton>
+                                    {currentUser.email !== productData.emailUser && (
+                                        <Button
+                                            variant="contained"
+                                            color="secondary"
+                                            onClick={handleSendMessage}
+                                            startIcon={<IconMessage stroke={1.5} size="1.3rem" />}
+                                        >
+                                            Nhắn tin ngay
+                                        </Button>
+                                    )}
                                 </Stack>
+                            </CardContent>
+                        </Box>
+                        <Box
+                            component="form"
+                            sx={{
+                                marginTop: 2,
+                                boxShadow: 'rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px',
+                                borderRadius: 1,
+                                '& .MuiTextField-root': { mb: 4, width: '100%' }
+                            }}
+                            noValidate
+                            autoComplete="off"
+                        >
+                            <CardContent>
+                                <ProductNewUpload />
+                            </CardContent>
+                        </Box>
+                        <Box
+                            component="form"
+                            sx={{
+                                marginTop: 2,
+                                boxShadow: 'rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px',
+                                borderRadius: 1,
+                                '& .MuiTextField-root': { mb: 4, width: '100%' }
+                            }}
+                            noValidate
+                            autoComplete="off"
+                        >
+                            <CardContent>
+                                <ProductFilterView />
                             </CardContent>
                         </Box>
                     </Stack>

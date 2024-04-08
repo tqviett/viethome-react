@@ -14,7 +14,6 @@ import Transitions from 'ui-component/extended/Transitions';
 // assets
 import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons';
 import { shouldForwardProp } from '@mui/system';
-import { ProductSort, ProductList, ProductCartWidget, ProductFilterSidebar } from 'ui-component/products';
 
 // styles
 const PopperStyle = styled(Popper, { shouldForwardProp })(({ theme }) => ({
@@ -28,7 +27,7 @@ const PopperStyle = styled(Popper, { shouldForwardProp })(({ theme }) => ({
 }));
 
 const OutlineInputStyle = styled(OutlinedInput, { shouldForwardProp })(({ theme }) => ({
-    width: 434,
+    width: 900,
     marginLeft: 16,
     paddingLeft: 16,
     paddingRight: 16,
@@ -56,18 +55,22 @@ const HeaderAvatarStyle = styled(Avatar, { shouldForwardProp })(({ theme }) => (
         color: theme.palette.secondary.light
     }
 }));
-
 // ==============================|| SEARCH INPUT - MOBILE||============================== //
 
-const MobileSearch = ({ value, setValue, popupState }) => {
+const MobileSearch = ({ value, setValue, onSearchChange, popupState }) => {
     const theme = useTheme();
+
+    const handleChange = (event) => {
+        onSearchChange(event); // Gọi hàm handleSearchChange từ SearchSection
+        setValue(event.target.value); // Cập nhật giá trị tìm kiếm
+    };
 
     return (
         <OutlineInputStyle
             id="input-search-header"
             value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="Search"
+            onChange={handleChange} // Sử dụng handleChange thay vì setValue trực tiếp
+            placeholder="Tìm kiếm...."
             startAdornment={
                 <InputAdornment position="start">
                     <IconSearch stroke={1.5} size="1rem" color={theme.palette.grey[500]} />
@@ -75,11 +78,6 @@ const MobileSearch = ({ value, setValue, popupState }) => {
             }
             endAdornment={
                 <InputAdornment position="end">
-                    <ButtonBase sx={{ borderRadius: '12px' }}>
-                        <HeaderAvatarStyle variant="rounded">
-                            <IconAdjustmentsHorizontal stroke={1.5} size="1.3rem" />
-                        </HeaderAvatarStyle>
-                    </ButtonBase>
                     <Box sx={{ ml: 2 }}>
                         <ButtonBase sx={{ borderRadius: '12px' }}>
                             <Avatar
@@ -111,21 +109,20 @@ const MobileSearch = ({ value, setValue, popupState }) => {
 MobileSearch.propTypes = {
     value: PropTypes.string,
     setValue: PropTypes.func,
-    popupState: PopupState
+    onSearchChange: PropTypes.func, // Thêm prop onSearchChange
+    popupState: PropTypes.object
 };
 
 // ==============================|| SEARCH INPUT ||============================== //
 
-const SearchSection = () => {
+const SearchSection = ({ value, onSearchChange }) => {
     const theme = useTheme();
-    const [value, setValue] = useState('');
-    const [openFilter, setOpenFilter] = useState(false);
-    const handleOpenFilter = () => {
-        setOpenFilter(true);
-    };
+    const [searchQuery, setSearchQuery] = useState(value);
 
-    const handleCloseFilter = () => {
-        setOpenFilter(false);
+    const handleSearchChange = (event) => {
+        const { value } = event.target;
+        setSearchQuery(value);
+        onSearchChange(event);
     };
 
     return (
@@ -134,7 +131,7 @@ const SearchSection = () => {
                 <PopupState variant="popper" popupId="demo-popup-popper">
                     {(popupState) => (
                         <>
-                            <Box sx={{ ml: 10 }}>
+                            <Box sx={{ ml: 2 }}>
                                 <ButtonBase sx={{ borderRadius: '12px' }}>
                                     <HeaderAvatarStyle variant="rounded" {...bindToggle(popupState)}>
                                         <IconSearch stroke={1.5} size="1.2rem" />
@@ -157,7 +154,12 @@ const SearchSection = () => {
                                                 <Box sx={{ p: 2 }}>
                                                     <Grid container alignItems="center" justifyContent="space-between">
                                                         <Grid item xs>
-                                                            <MobileSearch value={value} setValue={setValue} popupState={popupState} />
+                                                            <MobileSearch
+                                                                value={value}
+                                                                setValue={setSearchQuery}
+                                                                popupState={popupState}
+                                                                onSearchChange={handleSearchChange}
+                                                            />
                                                         </Grid>
                                                     </Grid>
                                                 </Box>
@@ -173,27 +175,12 @@ const SearchSection = () => {
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <OutlineInputStyle
                     id="input-search-header"
-                    value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    placeholder="Search"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    placeholder="Tìm kiếm...."
                     startAdornment={
                         <InputAdornment position="start">
                             <IconSearch stroke={1.5} size="1rem" color={theme.palette.grey[500]} />
-                        </InputAdornment>
-                    }
-                    endAdornment={
-                        <InputAdornment position="end">
-                            <Stack sx={{ borderRadius: '12px' }}>
-                                <HeaderAvatarStyle variant="rounded">
-                                    <ProductFilterSidebar
-                                        bar
-                                        openFilter={openFilter}
-                                        onOpenFilter={handleOpenFilter}
-                                        onCloseFilter={handleCloseFilter}
-                                    />
-                                    <IconAdjustmentsHorizontal stroke={1.5} size="1.3rem" />
-                                </HeaderAvatarStyle>
-                            </Stack>
                         </InputAdornment>
                     }
                     aria-describedby="search-helper-text"
@@ -202,6 +189,11 @@ const SearchSection = () => {
             </Box>
         </>
     );
+};
+
+SearchSection.propTypes = {
+    value: PropTypes.string,
+    onSearchChange: PropTypes.func
 };
 
 export default SearchSection;
