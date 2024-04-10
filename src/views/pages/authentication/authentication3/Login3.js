@@ -46,7 +46,7 @@ const Login = () => {
                                                         gutterBottom
                                                         variant={matchDownSM ? 'h3' : 'h2'}
                                                     >
-                                                        Chào mừng tới Khéo-Dyn
+                                                        Chào mừng tới Việt-Home
                                                     </Typography>
                                                 </Stack>
                                             </Grid>

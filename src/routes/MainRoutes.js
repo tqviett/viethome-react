@@ -6,6 +6,7 @@ import Loadable from 'ui-component/Loadable';
 
 // dashboard routing- ADMIN ROUTING
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/ManageProducts')));
+const ManageUser = Loadable(lazy(() => import('views/dashboard/ManageUsers')));
 
 // utilities routing
 
@@ -83,6 +84,10 @@ const MainRoutes = {
         {
             path: '/admin/ManageProducts',
             element: <DashboardDefault />
+        },
+        {
+            path: '/admin/ManageUsers',
+            element: <ManageUser />
         },
         {
             path: '/orders',

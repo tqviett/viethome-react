@@ -34,7 +34,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import { AuthContext } from 'context/AuthContext';
 
 //Ui-Component
-import { ProductList, ProductNewUpload } from 'ui-component/products';
+import { ProductList, ProductFilterType } from 'ui-component/products';
 import { ProductFilterView } from 'ui-component/products';
 
 import NotFoundView from 'views/error';
@@ -526,7 +526,7 @@ const ViewProduct = () => {
                             autoComplete="off"
                         >
                             <CardContent>
-                                <ProductNewUpload />
+                                <ProductFilterType />
                             </CardContent>
                         </Box>
                         <Box

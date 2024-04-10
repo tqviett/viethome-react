@@ -9,7 +9,9 @@ const Chat = () => {
     return (
         <Stack className="chat">
             <Toolbar className="chatInfo" sx={{ height: '100px' }}>
-                <Typography sx={{ fontSize: '20px', marginLeft: '20px' }}>{data.user?.name}</Typography>
+                <Typography sx={{ fontSize: '20px', marginLeft: '20px' }}>
+                    {data.user?.name}- SĐT: {data.user?.phone}
+                </Typography>
             </Toolbar>
             <Messages />
             <Input />

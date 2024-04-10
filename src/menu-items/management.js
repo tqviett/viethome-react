@@ -1,12 +1,13 @@
 // assets
-import { IconListCheck, IconMoneybag, IconBuildingStore, IconMessageDots } from '@tabler/icons';
+import { IconListCheck, IconMoneybag, IconBuildingStore, IconMessageDots, IconUser } from '@tabler/icons';
 
 // constant
 const icons = {
     IconBuildingStore,
     IconListCheck,
     IconMoneybag,
-    IconMessageDots
+    IconMessageDots,
+    IconUser
 };
 
 // ==============================|| UTILITIES MENU ITEMS ||============================== //
@@ -26,18 +27,10 @@ const management = {
         },
         {
             id: 'orders',
-            title: 'Đơn hàng',
+            title: 'Người dùng',
             type: 'item',
-            url: '/orders',
-            icon: icons.IconListCheck,
-            breadcrumbs: false
-        },
-        {
-            id: 'moeny',
-            title: 'Chi tiêu',
-            type: 'item',
-            url: '/money',
-            icon: icons.IconMoneybag,
+            url: '/admin/ManageUsers',
+            icon: icons.IconUser,
             breadcrumbs: false
         }
     ]
