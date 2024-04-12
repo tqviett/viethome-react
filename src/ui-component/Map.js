@@ -8,7 +8,7 @@ const Map = (coords) => {
         <>
             <div style={{ height: '50vh', width: '100%' }}>
                 <GoogleMapReact
-                    bootstrapURLKeys={{ key: 'AIzaSyAy1fKwD3-6gT_4-qnIXRmfNAtIoDx0ujc' }}
+                    bootstrapURLKeys={{ key: 'AIzaSyA9C7Pmxw6Gw3H2mM4WA_XGngRIIr2VS7k' }}
                     defaultCenter={coords}
                     defaultZoom={15}
                     center={coords}

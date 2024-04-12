@@ -86,7 +86,7 @@ const FirebaseLogin = ({ ...others }) => {
                         name: name
                     };
                     if (status === 'banned') {
-                        NotificationManager.error('Tài khoản này bị cấm do vi phạm các!', 'Thông báo');
+                        NotificationManager.error('Tài khoản này bị cấm do vi phạm các Điều khoản sử dụng!', 'Thông báo');
                         navigate('/login'); // Chuyển hướng người dùng về trang đăng nhập
                     } else {
                         localStorage.setItem('user', JSON.stringify(userInfo));
@@ -106,8 +106,8 @@ const FirebaseLogin = ({ ...others }) => {
         <>
             <Formik
                 initialValues={{
-                    email: 'viet-admin@gmail.com',
-                    password: '123456',
+                    email: '',
+                    password: '',
                     submit: null
                 }}
                 validationSchema={Yup.object().shape({

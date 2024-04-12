@@ -46,7 +46,8 @@ import { FIRESTORE } from '../../../constants';
 //google Map
 import Map from 'ui-component/Map';
 import { geocodeByAddress, getLatLng } from 'react-google-places-autocomplete';
-import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
+import GoogleMapReact from 'google-map-react';
+const AnyReactComponent = ({ text }) => <div>{text}</div>;
 
 const StyledProductImg = styled('img')({
     top: 0,
@@ -55,6 +56,13 @@ const StyledProductImg = styled('img')({
     objectFit: 'contain',
     position: 'absolute'
 });
+const defaultProps = {
+    center: {
+        lat: 21.0277644,
+        lng: 105.8341598
+    },
+    zoom: 11
+};
 const ViewProduct = () => {
     const theme = useTheme();
     const [productData, setProductData] = useState({});
@@ -133,10 +141,12 @@ const ViewProduct = () => {
             docRefs.forEach((product) => {
                 const data = product.data();
                 if (data.emailUser === dataUser.email && product.id !== params.id) {
-                    res.push({
-                        ...data,
-                        id: product.id
-                    });
+                    if (data.status === 'success') {
+                        res.push({
+                            ...data,
+                            id: product.id
+                        });
+                    }
                 }
             });
 
@@ -454,6 +464,16 @@ const ViewProduct = () => {
                                     Địa chỉ: {location}, {ward}, {district}, Hà Nội
                                 </Typography>
                                 {/* <Map coords={coords} /> */}
+                                <div style={{ height: '50vh', width: '100%' }}>
+                                    <GoogleMapReact
+                                        bootstrapURLKeys={{ key: 'AIzaSyDI8b-PUgKUgj5rHdtgEHCwWjUXYJrqYhE' }}
+                                        defaultCenter={defaultProps.center}
+                                        defaultZoom={defaultProps.zoom}
+                                        center={defaultProps.center}
+                                    >
+                                        <AnyReactComponent lat={21.0277644} lng={105.8341598} text={<LocationOnIcon color="error" />} />
+                                    </GoogleMapReact>
+                                </div>
                             </CardContent>
                         </Stack>
                         <Stack
