@@ -57,6 +57,7 @@ export default function Page() {
         }
     }, [emailLocal]);
 
+    //find user with emailLocal
     const findUser = async () => {
         try {
             const q = query(collection(firestore, 'users'), where('email', '==', emailLocal));
@@ -81,6 +82,7 @@ export default function Page() {
         });
     };
 
+    //change Avatar
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -134,7 +136,16 @@ export default function Page() {
             });
 
             NotificationManager.success('Cập nhật thông tin thành công!', 'Thông báo');
-            navigate('/user/profile');
+
+            navigate('/profile');
+
+            setTimeout(() => {
+                //reload ~profile
+                NotificationManager.success('Thông tin sẽ cập nhật lại ngay', 'Thông báo');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }, 800);
         } catch (error) {
             console.log(error);
             NotificationManager.error('Có lỗi xảy ra!', 'Thông báo');
@@ -146,12 +157,10 @@ export default function Page() {
     return (
         <>
             <Helmet>
-                <title> Profile | VIET-HOME </title>
+                <title> TRANG CÁ NHÂN | VIET-HOME </title>
             </Helmet>
             <Container>
-                <Typography variant="h4" sx={{ mb: 5 }}>
-                    Tạo mới sản phẩm
-                </Typography>
+                <Typography variant="h4" sx={{ mb: 5 }}></Typography>
                 <Stack
                     sx={{
                         border: '1px solid #ffff',

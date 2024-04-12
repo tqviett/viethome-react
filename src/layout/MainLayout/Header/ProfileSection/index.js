@@ -46,7 +46,7 @@ const ProfileSection = () => {
     const customization = useSelector((state) => state.customization);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [notification, setNotification] = useState(false);
+    const [dataForm, setDataForm] = useState([]);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [open, setOpen] = useState(false);
     const { currentUser } = useContext(AuthContext);
@@ -94,6 +94,28 @@ const ProfileSection = () => {
             }
         }
     }, [currentUser]);
+
+    useEffect(() => {
+        if (currentUser.email) {
+            findUser();
+        }
+    }, [currentUser.email]);
+
+    const findUser = async () => {
+        try {
+            const q = query(collection(firestore, 'users'), where('email', '==', currentUser.email));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                const dataProduct = doc.data();
+                setDataForm({
+                    ...dataProduct,
+                    avatar: dataProduct.avatar
+                });
+            });
+        } catch (error) {
+            console.error('Error finding user:', error);
+        }
+    };
 
     return (
         <>
@@ -166,7 +188,7 @@ const ProfileSection = () => {
                                             <Stack direction="row" spacing={0.5} alignItems="center">
                                                 <Typography variant="h4">Xin chào,</Typography>
                                                 <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                                                    {currentUser.name}
+                                                    {dataForm.name}
                                                 </Typography>
                                             </Stack>
                                             <Typography variant="subtitle2">{role}</Typography>
@@ -222,18 +244,18 @@ const ProfileSection = () => {
                                                             primary={<Typography variant="body2">Nhà đang giao bán</Typography>}
                                                         />
                                                     </ListItemButton>
-                                                    <ListItemButton
-                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                        selected={selectedIndex === 2}
-                                                        onClick={(event) => handleListItemClick(event, 2, '/messages')}
-                                                    >
-                                                        <ListItemIcon>
-                                                            <IconMessage stroke={1.5} size="1.3rem" />
-                                                        </ListItemIcon>
-                                                        <ListItemText primary={<Typography variant="body2">Tin nhắn</Typography>} />
-                                                    </ListItemButton>
                                                 </>
                                             )}
+                                            <ListItemButton
+                                                sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                selected={selectedIndex === 2}
+                                                onClick={(event) => handleListItemClick(event, 2, '/messages')}
+                                            >
+                                                <ListItemIcon>
+                                                    <IconMessage stroke={1.5} size="1.3rem" />
+                                                </ListItemIcon>
+                                                <ListItemText primary={<Typography variant="body2">Tin nhắn</Typography>} />
+                                            </ListItemButton>
                                             <ListItemButton
                                                 sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                 selected={selectedIndex === 3}

@@ -205,12 +205,10 @@ const CreateProduct = () => {
     return (
         <>
             <Helmet>
-                <title> Dashboard: Create Product | KHEO-DYN </title>
+                <title> ĐĂNG TIN MỚI | KHEO-DYN </title>
             </Helmet>
             <Container>
-                <Typography variant="h4" sx={{ mb: 5 }}>
-                    Tạo mới sản phẩm
-                </Typography>
+                <Typography variant="h4" sx={{ mb: 5 }}></Typography>
                 <Stack
                     sx={{
                         border: '1px solid #ffff',

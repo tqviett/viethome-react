@@ -90,13 +90,11 @@ export default function ProductsPage() {
     return (
         <>
             <Helmet>
-                <title> Dashboard: Products | VIET-HOME </title>
+                <title> TIN ĐÃ ĐĂNG | VIET-HOME </title>
             </Helmet>
 
             <Container>
-                <Typography variant="h4" sx={{ mb: 5 }}>
-                    Sảm phẩm
-                </Typography>
+                <Typography variant="h4" sx={{ mb: 5 }}></Typography>
 
                 <Stack direction="row" flexWrap="wrap-reverse" alignItems="center" justifyContent="space-between" sx={{ mb: 5 }}>
                     <Button color="secondary" variant="contained" endIcon={<AddIcon />} onClick={() => navigate('/user/product/create')}>

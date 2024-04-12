@@ -23,7 +23,7 @@ import Iconify from 'components/iconify';
 import Scrollbar from 'components/scrollbar';
 import { ColorMultiPicker } from 'components/color-utils';
 import { districtApi, wardApi } from 'api/clients/provinceService';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
 
@@ -53,6 +53,7 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
     const [districtIds, setDistrictIds] = useState([]);
     const [ward, setWard] = useState([]);
     const params = useParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchPublicDistrict = async () => {
@@ -107,10 +108,8 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
         handleFilterChange('price', value);
     };
     const handleResetFilters = () => {
-        handleFilterChange('type', '');
-        handleFilterChange('district', '');
-        handleFilterChange('ward', '');
-        handleFilterChange('price', '');
+        navigate('/');
+        window.location.reload();
     };
 
     return (

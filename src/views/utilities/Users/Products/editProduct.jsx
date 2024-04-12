@@ -245,7 +245,7 @@ const EditProduct = () => {
     return (
         <>
             <Helmet>
-                <title> Dashboard: Edit-product | VIET-HOME </title>
+                <title> Dashboard: Edit Product | VIET-HOME </title>
             </Helmet>
             <Container>
                 <Typography variant="h4" sx={{ mb: 5 }}>

@@ -118,7 +118,7 @@ export default function UserPage() {
     return (
         <Container>
             <Helmet>
-                <title> ADMIN: ManageUsers | VIET-HOME </title>
+                <title>QUẢN LÝ NGƯỜI DÙNG | VIET-HOME </title>
             </Helmet>
 
             <Card>

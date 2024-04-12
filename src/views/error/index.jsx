@@ -2,32 +2,18 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import { Helmet } from 'react-helmet-async';
 
 import { Link } from 'react-router-dom';
 import Illustration_404 from 'ui-component/illustration_404';
 import Logo from 'ui-component/Logo';
 
 export default function NotFoundView() {
-    const renderHeader = (
-        <Box
-            component="header"
-            sx={{
-                top: 0,
-                left: 0,
-                width: 1,
-                lineHeight: 0,
-                position: 'fixed',
-                p: (theme) => ({ xs: theme.spacing(3, 3, 0), sm: theme.spacing(5, 5, 0) })
-            }}
-        >
-            <Logo /> {/* Logo sẽ hiển thị nếu đường dẫn và tên file được đặt chính xác */}
-        </Box>
-    );
-
     return (
         <>
-            {renderHeader}
-
+            <Helmet>
+                <title> ERROR </title>
+            </Helmet>
             <Container>
                 <Box
                     sx={{

@@ -4,18 +4,18 @@ export const ProtectedRoute = ({ children }) => {
     const user = localStorage.getItem('user');
     const userInfo = user ? JSON.parse(user) : null;
     const { pathname } = useLocation();
-    const publicRoute = ['/', '/home', '/login', '/register'];
+    const publicRoute = ['/', '/login', '/register', '/about-me', '/privacy-policy', '/resolve-complaints', '/terms-of-use'];
 
     if (!(publicRoute.includes(pathname) || user)) {
         return <Navigate to="/login" />;
     }
 
     const role = userInfo?.role;
-    const adminRoutes = ['/admin'];
+    const adminRoutes = ['/admin', '/admin/dashboard', '/admin/ManageProducts', '/admin/ManageUsers'];
     const userRoutes = ['/user', '/user/my-products', '/user/product/create'];
 
     if (role === 'user' && adminRoutes.includes(pathname)) {
-        return <Navigate to="/home" />;
+        return <Navigate to="/" />;
     }
 
     if (role === 'admin' && userRoutes.includes(pathname)) {

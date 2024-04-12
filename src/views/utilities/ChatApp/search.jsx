@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { collection, query, where, getDocs, setDoc, doc, updateDoc, serverTimestamp, getDoc, onSnapshot } from 'firebase/firestore';
 import { firestore } from '../../../firebase';
-import { Container, Typography, Stack, TextField, Button } from '@mui/material';
+import { Container, Typography, Stack, TextField, Button, Divider } from '@mui/material';
 import Avatar from 'ui-component/extended/Avatar';
 import { ChatContext } from 'context/ChatContext';
 import { AuthContext } from 'context/AuthContext';
@@ -10,19 +10,29 @@ const Search = () => {
     const [username, setUsername] = useState('');
     const [user, setUser] = useState(null);
     const [err, setErr] = useState(false);
+    const [u, setU] = useState(false);
     const { currentUser } = useContext(AuthContext);
     const { dispatch } = useContext(ChatContext);
-    const [chats, setChats] = useState([]);
 
     const handleSearch = async () => {
         const q = query(collection(firestore, 'users'), where('name', '==', username));
 
         try {
             const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                setUser(doc.data());
-            });
-        } catch (err) {
+            if (!querySnapshot.empty) {
+                const docData = querySnapshot.docs[0].data();
+                if (docData.role === 'admin') {
+                    setErr(true);
+                    setU(false);
+                } else {
+                    setUser(docData);
+                    setU(true);
+                }
+            } else {
+                setErr(true);
+                setU(false);
+            }
+        } catch (error) {
             setErr(true);
         }
     };
@@ -41,10 +51,10 @@ const Search = () => {
                 // Nếu combinedId đã tồn tại, thực hiện các hành động cần thiết
                 dispatch({ type: 'CHANGE_CHAT_USER', load: user, payload: combinedId });
             } else {
-                //create a chat in chats collection
+                //tạo chat trong chats collection
                 await setDoc(doc(firestore, 'chats', combinedId), { messages: [] });
 
-                //create user chats
+                //tạo user chats
                 await updateDoc(doc(firestore, 'userChats', currentUser.uid), {
                     [combinedId + '.userInfo']: {
                         id: user.id,
@@ -72,26 +82,40 @@ const Search = () => {
         setUsername('');
     };
     return (
-        <Stack className="search">
-            <Stack className="searchForm">
-                <input
-                    type="text"
-                    placeholder="Find a user"
-                    onKeyDown={handleKey}
-                    onChange={(e) => setUsername(e.target.value)}
-                    value={username}
-                />
+        <>
+            <Stack className="search">
+                <Stack className="searchForm">
+                    <input
+                        type="text"
+                        placeholder="Find a user"
+                        onKeyDown={handleKey}
+                        onChange={(e) => setUsername(e.target.value)}
+                        value={username}
+                    />
+                </Stack>
+                {u ? (
+                    <>
+                        {user && (
+                            <Button className="userChat" onClick={handleSelect}>
+                                <Avatar src={user.avatar} alt="" />
+                                <Stack className="userChatInfo">
+                                    <Typography>{user.name}</Typography>
+                                </Stack>
+                            </Button>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {err && (
+                            <Stack className="userChat">
+                                <Typography sx={{ color: 'white', textAlign: 'center' }}>Không tìm thấy người dùng</Typography>
+                            </Stack>
+                        )}
+                    </>
+                )}
             </Stack>
-            {err && <Stack>User not found!</Stack>}
-            {user && (
-                <Button className="userChat" onClick={handleSelect}>
-                    <Avatar src={user.avatar} alt="" />
-                    <Stack className="userChatInfo">
-                        <Typography>{user.name}</Typography>
-                    </Stack>
-                </Button>
-            )}
-        </Stack>
+            <Divider />
+        </>
     );
 };
 

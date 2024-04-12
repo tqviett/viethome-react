@@ -18,23 +18,23 @@ import { Link } from 'react-router-dom';
 
 // assets
 import { IconMenu2 } from '@tabler/icons';
-import { AuthContext } from 'context/AuthContext';
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
 const Header = ({ handleLeftDrawerToggle }) => {
     const theme = useTheme();
-    const { currentUser } = useContext(AuthContext);
     // lấy thông tin người dùng từ Current User
     const [isAdmin, setIsAdmin] = useState(false);
     const [haveRole, setHaveRole] = useState(false);
     useEffect(() => {
-        if (currentUser) {
-            const role = currentUser.role;
+        const userDataString = localStorage.getItem('user');
+        if (userDataString) {
+            const userData = JSON.parse(userDataString);
+            const role = userData.role;
             setIsAdmin(role === 'admin');
             setHaveRole('true');
         }
-    }, [currentUser]);
+    }, []);
     return (
         <>
             {/* logo & toggler button */}
@@ -80,7 +80,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 <>
                     <Box sx={{ flexGrow: 1 }} />
                     <Box sx={{ flexGrow: 1 }} />
-                    <NotificationSection />
+                    {/* <NotificationSection /> */}
                     <ProfileSection />
                 </>
             ) : (

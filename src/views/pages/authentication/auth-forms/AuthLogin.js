@@ -78,14 +78,20 @@ const FirebaseLogin = ({ ...others }) => {
                     const userData = doc.data();
                     const role = userData.role;
                     const name = userData.name;
+                    const status = userData.status;
                     const userInfo = {
                         ...user.providerData,
                         role: role,
                         email: user.email,
                         name: name
                     };
-                    localStorage.setItem('user', JSON.stringify(userInfo));
-                    navigate(role === 'admin' ? '/admin/dashboard' : '/');
+                    if (status === 'banned') {
+                        NotificationManager.error('Tài khoản này bị cấm do vi phạm các!', 'Thông báo');
+                        navigate('/login'); // Chuyển hướng người dùng về trang đăng nhập
+                    } else {
+                        localStorage.setItem('user', JSON.stringify(userInfo));
+                        navigate(role === 'admin' ? '/admin/dashboard' : '/');
+                    }
                 });
             })
             .catch((error) => {

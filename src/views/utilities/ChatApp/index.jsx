@@ -9,11 +9,16 @@ import Chat from './chat';
 
 export default function ChatsPage() {
     return (
-        <Container className="home">
-            <Grid className="container">
-                <Sidebar />
-                <Chat />
-            </Grid>
-        </Container>
+        <>
+            <Helmet>
+                <title> TRÒ CHUYỆN | VIET-HOME </title>
+            </Helmet>
+            <Container className="home">
+                <Grid className="container">
+                    <Sidebar />
+                    <Chat />
+                </Grid>
+            </Container>
+        </>
     );
 }

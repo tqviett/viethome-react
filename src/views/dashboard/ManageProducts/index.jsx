@@ -123,70 +123,75 @@ export default function ProductsPage() {
     };
 
     return (
-        <Container>
-            <Card>
-                <ProductTableToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+        <>
+            <Helmet>
+                <title> QUẢN LÝ TIN RAO | VIET-HOME </title>
+            </Helmet>
+            <Container>
+                <Card>
+                    <ProductTableToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
-                <Scrollbar sx={{ maxHeight: '60vh' }}>
-                    <TableContainer sx={{ overflow: 'unset' }}>
-                        <Table sx={{ minWidth: 800 }}>
-                            <ProductTableHead
-                                order={order}
-                                orderBy={orderBy}
-                                rowCount={products.length}
-                                numSelected={selected.length}
-                                onRequestSort={handleSort}
-                                onSelectAllClick={handleSelectAllClick}
-                                headLabel={[
-                                    { id: '' },
-                                    { id: 'name', label: 'Tên' },
-                                    { id: 'description', label: 'Mô tả' },
-                                    { id: 'images', label: 'Hình ảnh' },
-                                    { id: 'price', label: 'Giá (Triệu)' },
-                                    { id: 'total', label: 'SL' },
-                                    { id: 'type', label: 'Loại' },
-                                    { id: 'emailUser', label: 'Người giao' },
-                                    { id: 'status', label: 'Status' },
-                                    { id: ' ' }
-                                ]}
-                            />
-                            <TableBody sx={{ overflow: 'auto' }}>
-                                {dataFiltered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                                    <ProductTableRow
-                                        key={row.id}
-                                        name={row.name}
-                                        description={row.description}
-                                        images={row.images}
-                                        price={row.price}
-                                        total={row.total}
-                                        type={row.type}
-                                        emailUser={row.emailUser}
-                                        status={row.status}
-                                        id={row.id}
-                                        selected={selected.indexOf(row.name) !== -1}
-                                        handleClick={(event) => handleClick(event, row.name)}
-                                        handleStatusChange={handleStatusChange}
-                                    />
-                                ))}
+                    <Scrollbar sx={{ maxHeight: '60vh' }}>
+                        <TableContainer sx={{ overflow: 'unset' }}>
+                            <Table sx={{ minWidth: 800 }}>
+                                <ProductTableHead
+                                    order={order}
+                                    orderBy={orderBy}
+                                    rowCount={products.length}
+                                    numSelected={selected.length}
+                                    onRequestSort={handleSort}
+                                    onSelectAllClick={handleSelectAllClick}
+                                    headLabel={[
+                                        { id: '' },
+                                        { id: 'name', label: 'Tên' },
+                                        { id: 'description', label: 'Mô tả' },
+                                        { id: 'images', label: 'Hình ảnh' },
+                                        { id: 'price', label: 'Giá (Triệu)' },
+                                        { id: 'total', label: 'SL' },
+                                        { id: 'type', label: 'Loại' },
+                                        { id: 'emailUser', label: 'Người giao' },
+                                        { id: 'status', label: 'Status' },
+                                        { id: ' ' }
+                                    ]}
+                                />
+                                <TableBody sx={{ overflow: 'auto' }}>
+                                    {dataFiltered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
+                                        <ProductTableRow
+                                            key={row.id}
+                                            name={row.name}
+                                            description={row.description}
+                                            images={row.images}
+                                            price={row.price}
+                                            total={row.total}
+                                            type={row.type}
+                                            emailUser={row.emailUser}
+                                            status={row.status}
+                                            id={row.id}
+                                            selected={selected.indexOf(row.name) !== -1}
+                                            handleClick={(event) => handleClick(event, row.name)}
+                                            handleStatusChange={handleStatusChange}
+                                        />
+                                    ))}
 
-                                <TableEmptyRows height={77} emptyRows={emptyRows(page, rowsPerPage, products.length)} />
+                                    <TableEmptyRows height={77} emptyRows={emptyRows(page, rowsPerPage, products.length)} />
 
-                                {notFound && <TableNoData query={filterName} />}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Scrollbar>
+                                    {notFound && <TableNoData query={filterName} />}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Scrollbar>
 
-                <TablePagination
-                    page={page}
-                    component="div"
-                    count={products.length}
-                    rowsPerPage={rowsPerPage}
-                    onPageChange={handleChangePage}
-                    rowsPerPageOptions={[3]}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </Card>
-        </Container>
+                    <TablePagination
+                        page={page}
+                        component="div"
+                        count={products.length}
+                        rowsPerPage={rowsPerPage}
+                        onPageChange={handleChangePage}
+                        rowsPerPageOptions={[3]}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                </Card>
+            </Container>
+        </>
     );
 }

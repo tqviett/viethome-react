@@ -32,7 +32,7 @@ export const FILTER_TYPE_OPTIONS = [
 export default function ShopNewUpload() {
     const navigate = useNavigate();
 
-    const handleSelectType = (value, label) => {
+    const handleSelectType = (key, value) => {
         navigate(`/products/${value}`);
     };
 
@@ -54,7 +54,7 @@ export default function ShopNewUpload() {
                     }}
                 >
                     {FILTER_TYPE_OPTIONS.map((item) => (
-                        <ListItemButton key={item.value} value={item.value} onClick={() => handleSelectType(item.value)}>
+                        <ListItemButton key={item.value} value={item.value} onClick={() => handleSelectType('type', item.value)}>
                             <ListItemText primary={<Typography variant="body1">{`> Cho Thuê ${item.label}`}</Typography>} />
                         </ListItemButton>
                     ))}

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import {
+    CardContent,
     Drawer,
     Fab,
     FormControl,
@@ -14,7 +15,8 @@ import {
     RadioGroup,
     Slider,
     Tooltip,
-    Typography
+    Typography,
+    Stack
 } from '@mui/material';
 import { IconSettings } from '@tabler/icons';
 
@@ -26,6 +28,7 @@ import SubCard from 'ui-component/cards/SubCard';
 import AnimateButton from 'ui-component/extended/AnimateButton';
 import { SET_BORDER_RADIUS, SET_FONT_FAMILY } from 'store/actions';
 import { gridSpacing } from 'store/constant';
+import { Link } from 'react-router-dom';
 
 // concat 'px'
 function valueText(value) {
@@ -91,7 +94,7 @@ const Customization = () => {
     return (
         <>
             {/* toggle button */}
-            <Tooltip title="Live Customize">
+            <Tooltip title="Xem thêm">
                 <Fab
                     component="div"
                     onClick={handleToggle}
@@ -206,6 +209,25 @@ const Customization = () => {
                                         </Typography>
                                     </Grid>
                                 </Grid>
+                            </SubCard>
+                        </Grid>
+                        <Grid item xs={12}>
+                            {/* chính sách bảo mật */}
+                            <SubCard title="Chính sách bảo mật">
+                                <Stack spacing={2} variant="h6" sx={{ ml: 1 }}>
+                                    <Typography component={Link} to="/about-me">
+                                        Về VIỆT-HOME
+                                    </Typography>
+                                    <Typography component={Link} to="/privacy-policy">
+                                        Chính sách bảo mật
+                                    </Typography>
+                                    <Typography component={Link} to="/resolve-complaints">
+                                        Giải quyết khiếu nại
+                                    </Typography>
+                                    <Typography component={Link} to="/terms-of-use">
+                                        Điều khoản sử dụng
+                                    </Typography>
+                                </Stack>
                             </SubCard>
                         </Grid>
                     </Grid>

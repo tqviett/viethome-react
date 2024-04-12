@@ -6,12 +6,13 @@ import AddIcon from '@mui/icons-material/Add';
 // components
 import { ProductSort, ProductList, ProductCartWidget, ProductFilterSidebar } from 'ui-component/products';
 // mock
-import { useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getDocs, collection } from 'firebase/firestore';
 import { firestore } from '../../../firebase';
 import { FIRESTORE } from '../../../constants';
 import { useEffect } from 'react';
 import SearchSection from './SearchSection';
+import { districtApi } from 'api/clients/provinceService';
 // ----------------------------------------------------------------------
 export const FILTER_TYPE_OPTIONS = [
     { value: 'phongTro', label: 'Phòng trọ' },
@@ -30,20 +31,56 @@ export default function ProductsPage() {
     const [products, setProducts] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState(listFilters);
+    const [district, setDistrict] = useState([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchPublicDistrict = async () => {
+            const response = await districtApi();
+            if (response.status === 200) {
+                const dataDistrict = response.data;
+                const districts = dataDistrict.results.map((district) => ({
+                    id: district.district_id,
+                    name: district.district_name
+                }));
+                setDistrict(districts);
+            }
+        };
+        fetchPublicDistrict();
+    }, []);
+
+    const type = FILTER_TYPE_OPTIONS.map((type) => ({
+        value: type.value,
+        label: type.label
+    }));
 
     useEffect(() => {
         if (params?.id) {
-            setFilters((prevFilters) => ({ ...prevFilters, type: params.id }));
-        } else {
-            setFilters(listFilters);
+            const matchingFilterType = FILTER_TYPE_OPTIONS.find((option) => option.value === params.id);
+
+            if (matchingFilterType) {
+                setFilters((prevFilters) => ({
+                    ...prevFilters,
+                    type: matchingFilterType.value
+                }));
+            } else {
+                const matchingDistrict = district.find((d) => d.id === params.id);
+                if (matchingDistrict) {
+                    setFilters((prevFilters) => ({
+                        ...prevFilters,
+                        district: matchingDistrict.name
+                    }));
+                }
+            }
         }
-    }, [params]);
+    }, [params, district]);
+
+    console.log(filters);
 
     useEffect(() => {
         findAll();
     }, [filters, searchQuery]);
 
-    // Function to handle filter change
     const handleFilterChange = (name, value) => {
         setFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
     };
@@ -55,7 +92,6 @@ export default function ProductsPage() {
         setOpenFilter(false);
     };
 
-    // handleSortChange
     const handleSortChange = async (sortBy) => {
         let sortedProducts = [];
 
@@ -70,33 +106,33 @@ export default function ProductsPage() {
         setProducts(sortedProducts);
     };
 
-    //handleSearchChange
     const handleSearchChange = (event) => {
         setSearchQuery(event.target.value);
     };
 
-    // find with ...
     const findAll = async () => {
-        // ...
         const doc_refs = await getDocs(collection(firestore, FIRESTORE.PRODUCTS));
         const res = [];
 
         doc_refs.forEach((product) => {
             const categories = JSON.parse(product.data().category);
-            if (
-                (searchQuery.length === 0 || product.data().name.toLowerCase().includes(searchQuery.toLowerCase())) &&
-                (filters.type === '' || product.data().type.value === filters.type) &&
-                (filters.district === '' || categories[0].district === filters.district) &&
-                (filters.ward === '' || categories[0].ward === filters.ward) &&
-                (filters.price === '' ||
-                    (filters.price === 'below' && product.data().price < 3000000) ||
-                    (filters.price === 'between' && product.data().price >= 3000000 && product.data().price <= 5000000) ||
-                    (filters.price === 'above' && product.data().price > 5000000))
-            ) {
-                res.push({
-                    ...product.data(),
-                    id: product.id
-                });
+            const data = product.data();
+            if (data.status == 'active') {
+                if (
+                    (searchQuery.length === 0 || product.data().name.toLowerCase().includes(searchQuery.toLowerCase())) &&
+                    (filters.type === '' || product.data().type.value === filters.type) &&
+                    (filters.district === '' || categories[0].district === filters.district) &&
+                    (filters.ward === '' || categories[0].ward === filters.ward) &&
+                    (filters.price === '' ||
+                        (filters.price === 'below' && product.data().price < 3000000) ||
+                        (filters.price === 'between' && product.data().price >= 3000000 && product.data().price <= 5000000) ||
+                        (filters.price === 'above' && product.data().price > 5000000))
+                ) {
+                    res.push({
+                        ...product.data(),
+                        id: product.id
+                    });
+                }
             }
         });
         setProducts(res);
@@ -105,13 +141,11 @@ export default function ProductsPage() {
     return (
         <>
             <Helmet>
-                <title> Dashboard: Products | VIET-HOME </title>
+                <title> TIN RAO | VIET-HOME </title>
             </Helmet>
 
             <Container>
-                {/* <Typography variant="h4" sx={{ mb: 5 }}>
-                    Sảm phẩm
-                </Typography> */}
+                <Typography variant="h4" sx={{ mb: 5 }}></Typography>
 
                 <Stack direction="row" flexWrap="wrap-reverse" alignItems="center" justifyContent="space-between" sx={{ mb: 5 }}>
                     <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>

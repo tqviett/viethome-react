@@ -35,7 +35,7 @@ import { AuthContext } from 'context/AuthContext';
 
 //Ui-Component
 import { ProductList, ProductFilterType } from 'ui-component/products';
-import { ProductFilterView } from 'ui-component/products';
+import { ProductFilterDistrict } from 'ui-component/products';
 
 import NotFoundView from 'views/error';
 import { fTwoDigits } from 'utils/formatNumber';
@@ -94,11 +94,22 @@ const ViewProduct = () => {
             console.error('Error finding user:', error);
         }
     };
+
     const fetchProductData = async () => {
         try {
             const snap = await getDoc(doc(firestore, FIRESTORE.PRODUCTS, params.id));
             if (snap.exists()) {
-                setProductData(snap.data());
+                const product = snap.data();
+                if (
+                    product.status == 'active' ||
+                    product.status == 'pending' ||
+                    product.status !== 'banned' ||
+                    product.emailUser == currentUser.email
+                ) {
+                    setProductData(product);
+                } else {
+                    navigate('/page-not-found');
+                }
             } else {
                 console.log('No such document');
             }
@@ -233,7 +244,7 @@ const ViewProduct = () => {
     return (
         <>
             <Helmet>
-                <title> Dashboard: Product-info | VIET-HOME </title>
+                <title> CHI TIẾT TIN | VIET-HOME </title>
             </Helmet>
             <Container>
                 {/* <Typography variant="h4" sx={{ mb: 5 }}>
@@ -320,7 +331,7 @@ const ViewProduct = () => {
                                 </Typography>
                                 <Typography variant="subtitle1" sx={{ mb: 1, mt: 1 }}>
                                     <LocationOnIcon fontSize="body1" color="primary" sx={{ mr: 1 }} />
-                                    Địa chỉ:{location}
+                                    Địa chỉ:{location}, {ward}, {district}, Hà Nội
                                 </Typography>
                                 <Typography variant="subtitle1" sx={{ mb: 2, mt: 1 }}>
                                     <PaidIcon fontSize="body1" color="error" sx={{ mr: 1 }} /> {/* Thay errorColor bằng màu của error */}
@@ -343,7 +354,7 @@ const ViewProduct = () => {
                                             Khu vực :
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={9}>
                                         <Typography variant="body1" sx={{ mb: 1 }}>
                                             cho thuê phòng trọ tại {district}
                                         </Typography>
@@ -355,7 +366,7 @@ const ViewProduct = () => {
                                             Loại tin rao:
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={9}>
                                         <Typography variant="body1" sx={{ mb: 1 }}>
                                             {productData.type.label}
                                         </Typography>
@@ -367,7 +378,7 @@ const ViewProduct = () => {
                                             Đối tượng :
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={9}>
                                         <Typography variant="body1" sx={{ mb: 1 }}>
                                             Tất cả mọi người
                                         </Typography>
@@ -379,7 +390,7 @@ const ViewProduct = () => {
                                             Ngày đăng:
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={9}>
                                         <Typography variant="body1" sx={{ mb: 1 }}>
                                             {formatDate(productData.created_at)}
                                         </Typography>
@@ -391,7 +402,7 @@ const ViewProduct = () => {
                                             Ghi chú:
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={9}>
                                         <Typography variant="body1" sx={{ mb: 1 }}>
                                             {productData.note}
                                         </Typography>
@@ -406,7 +417,7 @@ const ViewProduct = () => {
                                             Liên hệ :
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={9}>
                                         <Typography variant="body1" sx={{ mb: 1 }}>
                                             {dataUser.name}
                                         </Typography>
@@ -418,7 +429,7 @@ const ViewProduct = () => {
                                             Số điện thoại:
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={9}>
                                         <Typography variant="body1" sx={{ mb: 1 }}>
                                             {dataUser.phone}
                                         </Typography>
@@ -430,7 +441,7 @@ const ViewProduct = () => {
                                             Zalo:
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={9}>
                                         <Typography variant="body1" sx={{ mb: 1 }}>
                                             {dataUser.phone}
                                         </Typography>
@@ -541,7 +552,7 @@ const ViewProduct = () => {
                             autoComplete="off"
                         >
                             <CardContent>
-                                <ProductFilterView />
+                                <ProductFilterDistrict />
                             </CardContent>
                         </Box>
                     </Stack>

@@ -3,7 +3,7 @@ export { default as ProductList } from './ProductList';
 export { default as ProductSort } from './ProductSort';
 export { default as ProductCartWidget } from './ProductCartWidget';
 export { default as ProductFilterSidebar } from './ProductFilterSidebar';
-export { default as ProductFilterView } from './ProductFilterView';
+export { default as ProductFilterDistrict } from './ProductFilterDistrict';
 export { default as ProductFilterType } from './ProductFilterType';
 export { default as ProductTableHead } from './ProductTableHead';
 export { default as ProductTableRow } from './ProductTableRow';

@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
 
-export default function ShopFilterView() {
+export default function ShopFilterDistrict() {
     const [district, setDistrict] = useState([]);
     const navigate = useNavigate();
 
@@ -46,7 +46,7 @@ export default function ShopFilterView() {
                         bgcolor: 'background.paper',
                         position: 'relative',
                         overflow: 'auto',
-                        maxHeight: 300,
+                        maxHeight: 500,
                         '& ul': { padding: 0 }
                     }}
                 >
