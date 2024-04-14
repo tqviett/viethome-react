@@ -56,7 +56,7 @@ const ProfileSection = () => {
      * */
     const anchorRef = useRef(null);
     const handleLogout = async () => {
-        localStorage.setItem('user', '');
+        localStorage.removeItem('user');
         localStorage.setItem('accessToken', '');
         navigate('/login');
     };

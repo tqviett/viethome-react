@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 // @mui
 import { Container, Stack, Typography, Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -11,6 +11,7 @@ import { getDocs, collection } from 'firebase/firestore';
 import { firestore } from '../../../../firebase';
 import { FIRESTORE } from '../../../../constants';
 import { useEffect } from 'react';
+import { AuthContext } from 'context/AuthContext';
 
 // ----------------------------------------------------------------------
 
@@ -24,6 +25,7 @@ export default function ProductsPage() {
         ward: '',
         price: ''
     });
+    const { currentUser } = useContext(AuthContext);
 
     //get user in local storage
     const user = localStorage.getItem('user');
@@ -90,31 +92,46 @@ export default function ProductsPage() {
     return (
         <>
             <Helmet>
-                <title> TIN ĐÃ ĐĂNG | VIET-HOME </title>
+                <title>TIN ĐÃ ĐĂNG | VIET-HOME</title>
             </Helmet>
 
-            <Container>
-                <Typography variant="h4" sx={{ mb: 5 }}></Typography>
+            {currentUser.status === 'active' ? (
+                <Container>
+                    <Typography variant="h4" sx={{ mb: 5 }}></Typography>
 
-                <Stack direction="row" flexWrap="wrap-reverse" alignItems="center" justifyContent="space-between" sx={{ mb: 5 }}>
-                    <Button color="secondary" variant="contained" endIcon={<AddIcon />} onClick={() => navigate('/user/product/create')}>
-                        Thêm mới sản phẩm
-                    </Button>
-                    <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>
-                        <ProductFilterSidebar
-                            bar
-                            openFilter={openFilter}
-                            onOpenFilter={handleOpenFilter}
-                            onCloseFilter={handleCloseFilter}
-                            filters={filters}
-                            handleFilterChange={handleFilterChange}
-                        />
-                        <ProductSort onSortChange={handleSortChange} />
+                    <Stack direction="row" flexWrap="wrap-reverse" alignItems="center" justifyContent="space-between" sx={{ mb: 5 }}>
+                        <Button
+                            color="secondary"
+                            variant="contained"
+                            endIcon={<AddIcon />}
+                            onClick={() => navigate('/user/product/create')}
+                        >
+                            Thêm mới sản phẩm
+                        </Button>
+
+                        <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>
+                            <ProductFilterSidebar
+                                bar
+                                openFilter={openFilter}
+                                onOpenFilter={handleOpenFilter}
+                                onCloseFilter={handleCloseFilter}
+                                filters={filters}
+                                handleFilterChange={handleFilterChange}
+                            />
+                            <ProductSort onSortChange={handleSortChange} />
+                        </Stack>
                     </Stack>
-                </Stack>
 
-                <ProductList products={products} />
-            </Container>
+                    <ProductList products={products} />
+                </Container>
+            ) : (
+                <Container
+                    sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '80vh' }}
+                >
+                    <Typography variant="h1">Tài khoản của bạn chưa được duyệt!</Typography>
+                    <Typography variant="h1">vui lòng chờ quản trị viên xử lý và xác nhận thông tin của bạn!</Typography>
+                </Container>
+            )}
         </>
     );
 }

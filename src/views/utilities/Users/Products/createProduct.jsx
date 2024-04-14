@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
     Container,
@@ -33,6 +33,7 @@ import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import { styled, useTheme } from '@mui/material/styles';
 
 import { districtApi, wardApi } from 'api/clients/provinceService';
+import { AuthContext } from 'context/AuthContext';
 const listType = [
     { value: 'phongTro', label: 'Phòng trọ' },
     { value: 'nhaTro', label: 'Nhà trọ' },
@@ -70,11 +71,17 @@ const CreateProduct = () => {
     const [district, setDistrict] = useState([]);
     const [districtIds, setDistrictIds] = useState();
     const [ward, setWard] = useState([]);
+    const { currentUser } = useContext(AuthContext);
 
     //get user in local storage
     const user = localStorage.getItem('user');
     const userInfo = user ? JSON.parse(user) : null;
     const email = userInfo?.email;
+    useEffect(() => {
+        if (currentUser.status !== 'active') {
+            navigate('/page-not-found');
+        }
+    }, [currentUser]);
 
     useEffect(() => {
         const fetchPublicDistrict = async () => {
@@ -202,6 +209,7 @@ const CreateProduct = () => {
             setLoading(false);
         }
     };
+
     return (
         <>
             <Helmet>
