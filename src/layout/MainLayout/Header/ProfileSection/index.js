@@ -49,7 +49,10 @@ const ProfileSection = () => {
     const [dataForm, setDataForm] = useState([]);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [open, setOpen] = useState(false);
-    const { currentUser } = useContext(AuthContext);
+
+    //get user in local storage
+    const user = localStorage.getItem('user');
+    const userInfo = user ? JSON.parse(user) : null;
 
     /**
      * anchorRef is used on different componets and specifying one type leads to other components throwing an error
@@ -57,7 +60,7 @@ const ProfileSection = () => {
     const anchorRef = useRef(null);
     const handleLogout = async () => {
         localStorage.removeItem('user');
-        localStorage.setItem('accessToken', '');
+        localStorage.removeItem('accessToken', '');
         navigate('/login');
     };
 
@@ -84,8 +87,8 @@ const ProfileSection = () => {
     const [role, setRole] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
     useEffect(() => {
-        if (currentUser) {
-            const roles = currentUser.role;
+        if (userInfo) {
+            const roles = userInfo.role;
             setIsAdmin(roles === 'admin');
             if (roles == 'user') {
                 setRole('Người dùng');
@@ -93,17 +96,17 @@ const ProfileSection = () => {
                 setRole('Quản trị viên');
             }
         }
-    }, [currentUser]);
+    }, [userInfo]);
 
     useEffect(() => {
-        if (currentUser.email) {
+        if (userInfo.email) {
             findUser();
         }
-    }, [currentUser.email]);
+    }, [userInfo.email]);
 
     const findUser = async () => {
         try {
-            const q = query(collection(firestore, 'users'), where('email', '==', currentUser.email));
+            const q = query(collection(firestore, 'users'), where('email', '==', userInfo.email));
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
                 const dataProduct = doc.data();
@@ -141,7 +144,7 @@ const ProfileSection = () => {
                 }}
                 icon={
                     <Avatar
-                        src={currentUser.avatar}
+                        src={dataForm.avatar}
                         sx={{
                             ...theme.typography.mediumAvatar,
                             margin: '8px -16px 8px 8px !important',

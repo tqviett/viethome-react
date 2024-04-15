@@ -83,12 +83,47 @@ const FirebaseRegister = ({ ...others }) => {
             const errorCode = error.code;
             const errorMessage = error.message;
             console.error(errorCode, errorMessage);
-            NotificationManager.error(errorMessage || 'Đăng kí thất bại rồi he!', 'Thông báo');
+            NotificationManager.error('Email này đã tồn tại mất rồi!', 'Thông báo');
         }
     };
 
-    const googleHandler = async () => {
-        console.error('Register');
+    const handleGoogleLogin = async () => {
+        try {
+            const result = await signInWithPopup(auth, ggProvider);
+            const user = result.user;
+
+            const querySnapshot = await getDocs(collection(firestore, 'users'));
+            const existingUser = querySnapshot.docs.find((doc) => doc.data().email === user.email);
+
+            if (existingUser) {
+                navigate('/login');
+            } else {
+                const userData = {
+                    id: user.uid,
+                    email: user.email,
+                    password: '123456',
+                    name: user.displayName || '',
+                    avatar: user.photoURL || '',
+                    phone: '',
+                    about: '',
+                    role: 'user',
+                    status: 'pending'
+                };
+                await setDoc(doc(firestore, 'users', user.uid), userData);
+                await setDoc(doc(firestore, 'userChats', user.uid), {});
+
+                // Save necessary user info to localStorage and navigate to home
+                const userInfo = {
+                    role: 'user',
+                    email: user.email,
+                    name: user.displayName || ''
+                };
+                localStorage.setItem('user', JSON.stringify(userInfo));
+                navigate('/');
+            }
+        } catch (error) {
+            console.error('Google login error:', error);
+        }
     };
 
     const handleClickShowPassword = () => {
@@ -112,11 +147,60 @@ const FirebaseRegister = ({ ...others }) => {
     return (
         <>
             <Grid container direction="column" justifyContent="center" spacing={2}>
+                <Grid item xs={12}>
+                    <AnimateButton>
+                        <Button
+                            disableElevation
+                            fullWidth
+                            onClick={handleGoogleLogin}
+                            size="large"
+                            variant="outlined"
+                            sx={{
+                                color: 'grey.700',
+                                backgroundColor: theme.palette.grey[50],
+                                borderColor: theme.palette.grey[100]
+                            }}
+                        >
+                            <Box sx={{ mr: { xs: 1, sm: 2, width: 20 } }}>
+                                <img src={Google} alt="google" width={16} height={16} style={{ marginRight: matchDownSM ? 8 : 16 }} />
+                            </Box>
+                            Sử dụng tài khoản google
+                        </Button>
+                    </AnimateButton>
+                </Grid>
+                <Grid item xs={12}>
+                    <Box
+                        sx={{
+                            alignItems: 'center',
+                            display: 'flex'
+                        }}
+                    >
+                        <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
+
+                        <Button
+                            variant="outlined"
+                            sx={{
+                                cursor: 'unset',
+                                m: 2,
+                                py: 0.5,
+                                px: 7,
+                                borderColor: `${theme.palette.grey[100]} !important`,
+                                color: `${theme.palette.grey[900]}!important`,
+                                fontWeight: 500,
+                                borderRadius: `${customization.borderRadius}px`
+                            }}
+                            disableRipple
+                            disabled
+                        >
+                            Hoặc
+                        </Button>
+
+                        <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
+                    </Box>
+                </Grid>
                 <Grid item xs={12} container alignItems="center" justifyContent="center">
                     <Box sx={{ mb: 2 }}>
-                        <Typography color={theme.palette.secondary.main} gutterBottom variant={matchDownSM ? 'h3' : 'h2'}>
-                            Đăng kí với chúng mình nhé
-                        </Typography>
+                        <Typography variant="subtitle1">Đăng ký bằng Email</Typography>
                     </Box>
                 </Grid>
             </Grid>

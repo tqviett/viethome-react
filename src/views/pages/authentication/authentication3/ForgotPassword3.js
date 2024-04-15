@@ -10,7 +10,7 @@ import { Divider, Grid, Stack, Typography, useMediaQuery, Button } from '@mui/ma
 import AuthWrapper1 from '../AuthWrapper1';
 import AuthCardWrapper from '../AuthCardWrapper';
 import Logo from 'ui-component/Logo';
-import AuthRegister from '../auth-forms/AuthRegister';
+import AuthForgotPassword from '../auth-forms/AuthForgotPassword';
 import AuthFooter from 'ui-component/cards/AuthFooter';
 
 // assets
@@ -47,27 +47,7 @@ const Register = () => {
                                             </Link>
                                         </Grid>
                                         <Grid item xs={12}>
-                                            <Grid
-                                                container
-                                                direction={matchDownSM ? 'column-reverse' : 'row'}
-                                                alignItems="center"
-                                                justifyContent="center"
-                                            >
-                                                <Grid item>
-                                                    <Stack alignItems="center" justifyContent="center" spacing={1}>
-                                                        <Typography
-                                                            color={theme.palette.secondary.main}
-                                                            gutterBottom
-                                                            variant={matchDownSM ? 'h3' : 'h2'}
-                                                        >
-                                                            Đăng ký với Việt-Home
-                                                        </Typography>
-                                                    </Stack>
-                                                </Grid>
-                                            </Grid>
-                                        </Grid>
-                                        <Grid item xs={12}>
-                                            <AuthRegister />
+                                            <AuthForgotPassword />
                                         </Grid>
                                         <Grid item xs={12}>
                                             <Divider />
@@ -80,7 +60,7 @@ const Register = () => {
                                                     variant="subtitle1"
                                                     sx={{ textDecoration: 'none' }}
                                                 >
-                                                    Tôi đã có tài khoản!
+                                                    Đăng nhập
                                                 </Typography>
                                             </Grid>
                                         </Grid>

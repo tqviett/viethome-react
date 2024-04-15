@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -31,14 +31,15 @@ import AnimateButton from 'ui-component/extended/AnimateButton';
 // assets
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import GoogleIcon from '@mui/icons-material/Google';
 
 import Google from 'assets/images/icons/social-google.svg';
-import { auth } from '../../../../firebase';
+import { auth, ggProvider } from '../../../../firebase';
 import { useDispatch, useSelector } from 'react-redux';
 import { NotificationManager } from 'react-notifications';
-import { useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useNavigate, Link } from 'react-router-dom';
+import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 import { firestore } from '../../../../firebase';
 
 // ============================|| FIREBASE - LOGIN ||============================ //
@@ -64,8 +65,55 @@ const FirebaseLogin = ({ ...others }) => {
     const handleMouseDownPassword = (event) => {
         event.preventDefault();
     };
+    const handleGoogleLogin = async () => {
+        try {
+            const result = await signInWithPopup(auth, ggProvider);
+            const user = result.user;
 
-    const loginUser = (body) => {
+            // Check if the user's email already exists in Firestore
+            const querySnapshot = await getDocs(collection(firestore, 'users'));
+            const existingUser = querySnapshot.docs.find((doc) => doc.data().email === user.email);
+
+            if (existingUser) {
+                // If email already exists, save necessary user info to localStorage and navigate to home
+                const userInfo = {
+                    role: existingUser.data().role,
+                    email: existingUser.data().email,
+                    name: existingUser.data().name
+                };
+                localStorage.setItem('user', JSON.stringify(userInfo));
+                navigate('/');
+            } else {
+                // If email does not exist, create new user data and save to Firestore
+                const userData = {
+                    id: user.uid,
+                    email: user.email,
+                    password: '123456',
+                    name: user.displayName || '',
+                    avatar: user.photoURL || '',
+                    phone: '',
+                    about: '',
+                    role: 'user',
+                    status: 'pending'
+                };
+                await setDoc(doc(firestore, 'users', user.uid), userData);
+                await setDoc(doc(firestore, 'userChats', user.uid), {});
+
+                // Save necessary user info to localStorage and navigate to home
+                const userInfo = {
+                    role: 'user',
+                    email: user.email,
+                    name: user.displayName || ''
+                };
+                localStorage.setItem('user', JSON.stringify(userInfo));
+                navigate('/');
+            }
+        } catch (error) {
+            console.error('Google login error:', error);
+        }
+    };
+
+    const loginUser = async (body) => {
         signInWithEmailAndPassword(auth, body?.email, body?.password)
             .then(async (userCredential) => {
                 const user = userCredential.user;
@@ -98,12 +146,76 @@ const FirebaseLogin = ({ ...others }) => {
                 const errorCode = error.code;
                 const errorMessage = error.message;
                 console.log(errorCode, errorMessage);
-                NotificationManager.error(errorMessage || 'Đăng nhập thất bại!', 'Thông báo');
+                NotificationManager.error('Tài khoản hoặc mật khẩu của bạn không đúng!', 'Thông báo');
             });
     };
-
+    const user = localStorage.getItem('user');
+    const userLocal = user ? JSON.parse(user) : null;
+    useEffect(() => {
+        if (userLocal !== null) {
+            navigate('/');
+        }
+    }, [userLocal]);
     return (
         <>
+            <Grid container direction="column" justifyContent="center" spacing={2}>
+                <Grid item xs={12}>
+                    <AnimateButton>
+                        <Button
+                            disableElevation
+                            fullWidth
+                            onClick={handleGoogleLogin}
+                            size="large"
+                            variant="outlined"
+                            sx={{
+                                color: 'grey.700',
+                                backgroundColor: theme.palette.grey[50],
+                                borderColor: theme.palette.grey[100]
+                            }}
+                        >
+                            <Box sx={{ mr: { xs: 1, sm: 2, width: 20 } }}>
+                                <img src={Google} alt="google" width={16} height={16} style={{ marginRight: matchDownSM ? 8 : 16 }} />
+                            </Box>
+                            Sử dụng tài khoản google
+                        </Button>
+                    </AnimateButton>
+                </Grid>
+                <Grid item xs={12}>
+                    <Box
+                        sx={{
+                            alignItems: 'center',
+                            display: 'flex'
+                        }}
+                    >
+                        <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
+
+                        <Button
+                            variant="outlined"
+                            sx={{
+                                cursor: 'unset',
+                                m: 2,
+                                py: 0.5,
+                                px: 7,
+                                borderColor: `${theme.palette.grey[100]} !important`,
+                                color: `${theme.palette.grey[900]}!important`,
+                                fontWeight: 500,
+                                borderRadius: `${customization.borderRadius}px`
+                            }}
+                            disableRipple
+                            disabled
+                        >
+                            Hoặc
+                        </Button>
+
+                        <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
+                    </Box>
+                </Grid>
+                <Grid item xs={12} container alignItems="center" justifyContent="center">
+                    <Box sx={{ mb: 2 }}>
+                        <Typography variant="subtitle1">Đăng nhập bằng Email</Typography>
+                    </Box>
+                </Grid>
+            </Grid>
             <Formik
                 initialValues={{
                     email: '',
@@ -187,6 +299,28 @@ const FirebaseLogin = ({ ...others }) => {
                                 </FormHelperText>
                             )}
                         </FormControl>
+                        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={checked}
+                                        onChange={(event) => setChecked(event.target.checked)}
+                                        name="checked"
+                                        color="primary"
+                                    />
+                                }
+                                label="Remember me"
+                            />
+                            <Typography
+                                component={Link}
+                                to="/forgot-password"
+                                variant="subtitle1"
+                                color="secondary"
+                                sx={{ textDecoration: 'none', cursor: 'pointer' }}
+                            >
+                                Bạn bị quên mất mật khẩu?
+                            </Typography>
+                        </Stack>
 
                         {errors.submit && (
                             <Box sx={{ mt: 3 }}>
@@ -194,7 +328,7 @@ const FirebaseLogin = ({ ...others }) => {
                             </Box>
                         )}
 
-                        <Box sx={{ mt: 2 }}>
+                        <Box sx={{ mt: 2, mb: 2 }}>
                             <AnimateButton>
                                 <Button
                                     disableElevation

@@ -4,7 +4,16 @@ export const ProtectedRoute = ({ children }) => {
     const user = localStorage.getItem('user');
     const userInfo = user ? JSON.parse(user) : null;
     const { pathname } = useLocation();
-    const publicRoute = ['/', '/login', '/register', '/about-me', '/privacy-policy', '/resolve-complaints', '/terms-of-use'];
+    const publicRoute = [
+        '/',
+        '/login',
+        '/register',
+        '/forgot-password',
+        '/about-me',
+        '/privacy-policy',
+        '/resolve-complaints',
+        '/terms-of-use'
+    ];
 
     if (!(publicRoute.includes(pathname) || user)) {
         return <Navigate to="/login" />;
