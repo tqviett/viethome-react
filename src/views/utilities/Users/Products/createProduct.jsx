@@ -47,7 +47,6 @@ const INIT_DATA = {
     total: '',
     type: '',
     note: '',
-    favorite: 'false',
     status: 'Pending',
     category: [],
     description: '',
