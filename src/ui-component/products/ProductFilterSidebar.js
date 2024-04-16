@@ -108,8 +108,10 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
         handleFilterChange('price', value);
     };
     const handleResetFilters = () => {
-        navigate('/');
-        window.location.reload();
+        handleFilterChange('type', '');
+        handleFilterChange('district', '');
+        handleFilterChange('ward', '');
+        handleFilterChange('price', '');
     };
 
     return (
@@ -145,7 +147,7 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
                                     <Typography variant="subtitle1" gutterBottom>
                                         Loại phòng
                                     </Typography>
-                                    <RadioGroup>
+                                    <RadioGroup value={filters.type}>
                                         {FILTER_TYPE_OPTIONS.map((item) => (
                                             <FormControlLabel
                                                 key={item.value}
@@ -164,19 +166,13 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
                             <Typography variant="subtitle1" gutterBottom>
                                 Quận/Huyện
                             </Typography>
-                            {/* <Select size="small" sx={{ width: '200px' }} value={districtIds} onChange={handleSelectDistrict}>
-                                {district.map((district) => (
-                                    <MenuItem key={district.id} value={district.id}>
-                                        {district.name}
-                                    </MenuItem>
-                                ))}
-                            </Select> */}
                             <Autocomplete
                                 id="district"
                                 size="small"
                                 options={district}
                                 getOptionLabel={(option) => (option ? option.name : '')}
                                 clearText=""
+                                value={district.find((item) => item.name === filters.district) || null}
                                 onChange={(e, value) => handleSelectDistrict('district', value || null)}
                                 renderInput={(params) => <TextField {...params} />}
                             />
@@ -203,7 +199,7 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
                             <Typography variant="subtitle1" gutterBottom>
                                 Giá
                             </Typography>
-                            <RadioGroup>
+                            <RadioGroup value={filters.price}>
                                 {FILTER_PRICE_OPTIONS.map((item) => (
                                     <FormControlLabel
                                         key={item.value}

@@ -71,7 +71,8 @@ const FirebaseRegister = ({ ...others }) => {
                 phone: '',
                 about: '',
                 role: 'user',
-                status: 'pending'
+                status: 'pending',
+                favorites: []
             };
 
             await setDoc(doc(firestore, FIRESTORE.USERS, user.uid), userData);

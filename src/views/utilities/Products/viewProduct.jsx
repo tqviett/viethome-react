@@ -15,10 +15,11 @@ import {
     Divider,
     ListItemText,
     ListItemButton,
-    ListItemIcon
+    Popper
 } from '@mui/material';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { getDoc, doc, getDocs, query, collection, where } from 'firebase/firestore';
+import { getDoc, doc, getDocs, query, collection, where, updateDoc } from 'firebase/firestore';
+import { NotificationManager } from 'react-notifications';
 
 import { Helmet } from 'react-helmet-async';
 import { styled, useTheme } from '@mui/material/styles';
@@ -27,7 +28,8 @@ import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PaidIcon from '@mui/icons-material/Paid';
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
-import { IconMessage } from '@tabler/icons';
+import { IconMessage, IconHeart } from '@tabler/icons';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import HomeIcon from '@mui/icons-material/Home';
 
 // context
@@ -42,7 +44,7 @@ import { fTwoDigits } from 'utils/formatNumber';
 import { formatDate } from 'utils/formatDate';
 import { firestore } from '../../../firebase';
 import { FIRESTORE } from '../../../constants';
-
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 //google Map
 import Map from 'ui-component/Map';
 import { geocodeByAddress, getLatLng } from 'react-google-places-autocomplete';
@@ -72,8 +74,38 @@ const ViewProduct = () => {
     const { currentUser } = useContext(AuthContext);
     const [dataUser, setDataUser] = useState([]);
     const [products, setProducts] = useState([]);
+    const [dataCurrentUser, setDataCurrentUser] = useState([]);
     const navigate = useNavigate();
     const [coords, setCoords] = useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [copied, setCopied] = useState(false);
+    const [favoriteIcon, setFavoriteIcon] = useState(false);
+
+    useEffect(() => {
+        findCurrentUser();
+    }, [currentUser]);
+    const findCurrentUser = async () => {
+        try {
+            const q = query(collection(firestore, 'users'), where('email', '==', currentUser.email));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                setDataCurrentUser({
+                    ...data,
+                    favorites: data.favorites
+                });
+            });
+        } catch (error) {
+            console.error('Error finding user:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (dataCurrentUser && dataCurrentUser.favorites) {
+            const isFavorite = dataCurrentUser.favorites.includes(params.id);
+            setFavoriteIcon(isFavorite);
+        }
+    }, [dataCurrentUser, params.id]);
 
     const viewProductUrl = window.location.href;
     const handleSendMessage = () => {
@@ -251,6 +283,58 @@ const ViewProduct = () => {
     const descriptionSetHtml = () => {
         return { __html: productData.description };
     };
+
+    //share button poper
+    const handleClickShare = (event) => {
+        setAnchorEl(anchorEl ? null : event.currentTarget);
+    };
+
+    const open = Boolean(anchorEl);
+    const id = open ? 'simple-popper' : undefined;
+
+    const onCopy = () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1000);
+        setTimeout(() => setAnchorEl(null), 1000);
+    };
+
+    //handle add favorite button
+    const handleAddFavorite = async () => {
+        try {
+            const userDocRef = doc(firestore, 'users', currentUser.id);
+
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                const currentFavorites = userData.favorites || [];
+
+                if (currentFavorites.includes(params.id)) {
+                    const updatedFavorites = currentFavorites.filter((id) => id !== params.id);
+
+                    await updateDoc(userDocRef, {
+                        favorites: updatedFavorites
+                    });
+                    setFavoriteIcon(false);
+
+                    NotificationManager.error('Đã xóa khỏi Tin yêu thích!', 'Thông báo');
+                } else {
+                    const updatedFavorites = [...currentFavorites, params.id];
+
+                    await updateDoc(userDocRef, {
+                        favorites: updatedFavorites
+                    });
+                    setFavoriteIcon(true);
+                    NotificationManager.success('Đã thêm vào Tin yêu thích!', 'Thông báo');
+                }
+                navigate(`/product/${params.id}`);
+            } else {
+                console.log('User does not exist!');
+            }
+        } catch (error) {
+            console.error('Error adding or removing favorite:', error);
+        }
+    };
+
     return (
         <>
             <Helmet>
@@ -297,11 +381,31 @@ const ViewProduct = () => {
                                 </Card>
                                 <Card sx={{ height: 50 }}>
                                     <CardActions>
-                                        <Button color="secondary" size="small">
-                                            Chia sẻ
-                                        </Button>
-                                        <Button color="secondary" size="small">
-                                            Yêu thích
+                                        <Box>
+                                            <Button color="secondary" size="small" onClick={handleClickShare}>
+                                                Chia sẻ
+                                            </Button>
+                                            <Popper id={id} open={open} anchorEl={anchorEl}>
+                                                <Box sx={{ border: 1, p: 1, bgcolor: 'background.paper', borderRadius: 2 }}>
+                                                    {viewProductUrl}
+                                                    <CopyToClipboard onCopy={onCopy} text={viewProductUrl}>
+                                                        <Button>{copied ? 'Copied!' : 'Copy'}</Button>
+                                                    </CopyToClipboard>
+                                                </Box>
+                                            </Popper>
+                                        </Box>
+                                        <Button color="secondary" size="small" onClick={handleAddFavorite}>
+                                            {favoriteIcon ? (
+                                                <>
+                                                    <FavoriteIcon fontSize="small" />
+                                                    Bỏ yêu thích
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <IconHeart fontSize="small" />
+                                                    Yêu thích
+                                                </>
+                                            )}
                                         </Button>
                                     </CardActions>
                                 </Card>

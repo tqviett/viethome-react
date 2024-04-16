@@ -75,8 +75,6 @@ export default function ProductsPage() {
         }
     }, [params, district]);
 
-    console.log(filters);
-
     useEffect(() => {
         findAll();
     }, [filters, searchQuery]);

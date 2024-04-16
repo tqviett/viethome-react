@@ -10,3 +10,4 @@ export { default as ProductTableRow } from './ProductTableRow';
 export { default as ProductTableToolbar } from './ProductTableToolbar';
 export { default as TableEmptyRows } from './TableEmptyRows';
 export { default as TableNoData } from './TableNoData';
+export { default as ProductFavorite } from './ProductFavorite';

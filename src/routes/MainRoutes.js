@@ -30,6 +30,7 @@ const Chats = Loadable(lazy(() => import('views/utilities/ChatApp')));
 const MyProduct = Loadable(lazy(() => import('views/utilities/Users/Products')));
 const CreateMyProducts = Loadable(lazy(() => import('views/utilities/Users/Products/createProduct')));
 const EditMyProducts = Loadable(lazy(() => import('views/utilities/Users/Products/editProduct')));
+const FavoriteProduct = Loadable(lazy(() => import('views/utilities/Users/Products/favoriteProducts')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -118,6 +119,10 @@ const MainRoutes = {
         {
             path: '/user/product/edit/:id',
             element: <EditMyProducts />
+        },
+        {
+            path: '/user/favorites',
+            element: <FavoriteProduct />
         }
     ]
 };

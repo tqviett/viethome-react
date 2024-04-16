@@ -247,12 +247,22 @@ const ProfileSection = () => {
                                                             primary={<Typography variant="body2">Nhà đang giao bán</Typography>}
                                                         />
                                                     </ListItemButton>
+                                                    <ListItemButton
+                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                        selected={selectedIndex === 2}
+                                                        onClick={(event) => handleListItemClick(event, 2, `/user/favorites`)}
+                                                    >
+                                                        <ListItemIcon>
+                                                            <IconHeart stroke={1.5} size="1.3rem" />
+                                                        </ListItemIcon>
+                                                        <ListItemText primary={<Typography variant="body2">Tin đã lưu</Typography>} />
+                                                    </ListItemButton>
                                                 </>
                                             )}
                                             <ListItemButton
                                                 sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                selected={selectedIndex === 2}
-                                                onClick={(event) => handleListItemClick(event, 2, '/messages')}
+                                                selected={selectedIndex === 3}
+                                                onClick={(event) => handleListItemClick(event, 3, '/messages')}
                                             >
                                                 <ListItemIcon>
                                                     <IconMessage stroke={1.5} size="1.3rem" />

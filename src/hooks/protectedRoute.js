@@ -21,7 +21,7 @@ export const ProtectedRoute = ({ children }) => {
 
     const role = userInfo?.role;
     const adminRoutes = ['/admin', '/admin/dashboard', '/admin/ManageProducts', '/admin/ManageUsers'];
-    const userRoutes = ['/user', '/user/my-products', '/user/product/create'];
+    const userRoutes = ['/user', '/user/my-products', '/user/product/create', '/user/favorites'];
 
     if (role === 'user' && adminRoutes.includes(pathname)) {
         return <Navigate to="/" />;
