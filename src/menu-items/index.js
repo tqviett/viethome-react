@@ -1,5 +1,3 @@
-import dashboard from './dashboard';
-import utilities from './utilities';
 import management from './management';
 
 // ==============================|| MENU ITEMS ||============================== //

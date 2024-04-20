@@ -34,8 +34,8 @@ import { strengthColor, strengthIndicator } from 'utils/password-strength';
 // assets
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../../../firebase';
+import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { auth, ggProvider } from '../../../../firebase';
 import { useSelector } from 'react-redux';
 import { NotificationManager } from 'react-notifications';
 import { useNavigate } from 'react-router-dom';

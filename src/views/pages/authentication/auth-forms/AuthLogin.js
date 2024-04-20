@@ -309,7 +309,7 @@ const FirebaseLogin = ({ ...others }) => {
                                         color="primary"
                                     />
                                 }
-                                label="Remember me"
+                                label="Nhớ tài khoản"
                             />
                             <Typography
                                 component={Link}

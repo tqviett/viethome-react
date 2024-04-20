@@ -48,7 +48,7 @@ const INIT_DATA = {
     type: '',
     note: '',
     favorite: 'false',
-    status: 'Pending',
+    status: 'pending',
     category: [],
     description: '',
     images: []
@@ -181,6 +181,20 @@ const EditProduct = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        if (
+            !dataForm.name ||
+            !dataForm.total ||
+            !dataForm.price ||
+            !dataForm.area ||
+            !dataForm.description ||
+            dataForm.category.length === 0 ||
+            !dataForm.category.every((category) => category.district && category.ward && category.location)
+        ) {
+            // Thông báo lỗi
+            NotificationManager.warning('Vui lòng điền đầy đủ các trường!', 'Thông báo');
+            setLoading(false);
+            return;
+        }
 
         const uploadTasks = dataForm.images
             .filter((image) => image instanceof File)
@@ -216,7 +230,7 @@ const EditProduct = () => {
 
     const handleDeleteProduct = async () => {
         try {
-            await deleteDoc(doc(firestore, FIRESTORE.PRODUCTS, params.id));
+            await updateDoc(doc(firestore, FIRESTORE.PRODUCTS, params.id), { status: 'banned' });
             NotificationManager.success('Xóa sản phẩm thành công!', 'Thông báo');
             navigate('/user/my-products');
         } catch (error) {
@@ -391,7 +405,6 @@ const EditProduct = () => {
                             />
 
                             <TextField
-                                required
                                 id="note"
                                 label="Ghi chú"
                                 multiline

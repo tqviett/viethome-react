@@ -124,7 +124,8 @@ export default function ProductsPage() {
                     (filters.price === '' ||
                         (filters.price === 'below' && product.data().price < 3000000) ||
                         (filters.price === 'between' && product.data().price >= 3000000 && product.data().price <= 5000000) ||
-                        (filters.price === 'above' && product.data().price > 5000000))
+                        (filters.price === 'between2' && product.data().price >= 5000000 && product.data().price <= 10000000) ||
+                        (filters.price === 'above' && product.data().price > 10000000))
                 ) {
                     res.push({
                         ...product.data(),

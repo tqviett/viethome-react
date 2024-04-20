@@ -32,7 +32,7 @@ export default function ShopProductCard({ product }) {
     const userInfo = user ? JSON.parse(user) : null;
     const uName = userInfo?.name;
 
-    const { name, images, price, id, category } = product;
+    const { name, images, price, id, category, status } = product;
     const navigate = useNavigate();
 
     // Function to render single image or array of images
@@ -62,6 +62,16 @@ export default function ShopProductCard({ product }) {
     const location = categoryObject.location;
     const district = categoryObject.district;
     const ward = categoryObject.ward;
+    let statusLabel;
+    if (status === 'pending') {
+        statusLabel = 'Chưa duyệt';
+    } else if (status === 'banned') {
+        statusLabel = 'Bị cấm';
+    } else if (status === 'active') {
+        statusLabel = 'Uy tín';
+    } else {
+        statusLabel = 'Không xác định';
+    }
 
     return (
         //phần quyền cho việc CLick
@@ -74,7 +84,10 @@ export default function ShopProductCard({ product }) {
                         {name}
                     </Typography>
                 </Link>
-                <Typography variant="subtitle1">{fCurrency(price)} VNĐ/Tháng</Typography>
+                <Stack direction="row" justifyContent="space-between">
+                    <Typography variant="subtitle1">{fCurrency(price)} VNĐ/Tháng</Typography>
+                    <Label color={status === 'pending' ? 'warning' : status === 'banned' ? 'error' : 'success'}>{statusLabel}</Label>
+                </Stack>
 
                 <Stack direction="row" justifyContent="space-between">
                     <Typography variant="subtitle2" noWrap>

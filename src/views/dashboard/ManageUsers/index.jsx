@@ -136,7 +136,6 @@ export default function UserPage() {
                                     { id: '' },
                                     { id: 'name', label: 'Họ và Tên' },
                                     { id: 'email', label: 'Email' },
-                                    { id: 'password', label: 'Mật khẩu' },
                                     { id: 'phone', label: 'Số điện thoại' },
                                     { id: 'role', label: 'Vai trò' },
                                     { id: 'status', label: 'Trạng thái' },
@@ -148,7 +147,6 @@ export default function UserPage() {
                                     <UserTableRow
                                         key={row.id}
                                         name={row.name}
-                                        password={row.password}
                                         phone={row.phone}
                                         role={row.role}
                                         email={row.email}

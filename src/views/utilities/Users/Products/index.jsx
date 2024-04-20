@@ -48,7 +48,7 @@ export default function ProductsPage() {
         docRefs.forEach((product) => {
             const categories = JSON.parse(product.data().category);
             const data = product.data();
-            if (data.emailUser === email) {
+            if (data.emailUser === email && data.status !== 'banned') {
                 if (
                     (filters.type === '' || product.data().type.value === filters.type) &&
                     (filters.district === '' || categories[0].district === filters.district) &&
@@ -56,7 +56,8 @@ export default function ProductsPage() {
                     (filters.price === '' ||
                         (filters.price === 'below' && product.data().price < 3000000) ||
                         (filters.price === 'between' && product.data().price >= 3000000 && product.data().price <= 5000000) ||
-                        (filters.price === 'above' && product.data().price > 5000000))
+                        (filters.price === 'between2' && product.data().price >= 5000000 && product.data().price <= 10000000) ||
+                        (filters.price === 'above' && product.data().price > 10000000))
                 ) {
                     res.push({
                         ...product.data(),
@@ -122,14 +123,37 @@ export default function ProductsPage() {
                         </Stack>
                     </Stack>
 
-                    <ProductList products={products} />
+                    <>
+                        {products.length > 0 ? (
+                            <ProductList products={products} />
+                        ) : (
+                            <Stack
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '60vh'
+                                }}
+                            >
+                                <Typography variant="h1" color="secondary">
+                                    Bạn chưa có bài giao thuê nào!
+                                </Typography>
+                                <Typography variant="h2" color="primary">
+                                    Chọn thêm mới sản phẩm để đăng giao nhé!
+                                </Typography>
+                            </Stack>
+                        )}
+                    </>
                 </Container>
             ) : (
                 <Container
                     sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '80vh' }}
                 >
-                    <Typography variant="h1">Tài khoản của bạn chưa được duyệt!</Typography>
-                    <Typography variant="h1">vui lòng chờ quản trị viên xử lý và xác nhận thông tin của bạn!</Typography>
+                    <Typography variant="h1">Bạn chưa thể đăng bài lúc này!</Typography>
+                    <Typography variant="h2" color="error">
+                        Vui lòng điền đủ thông tin cá nhân, quản trị viên sẽ xem xét duyệt tài khoản của bạn!
+                    </Typography>
                 </Container>
             )}
         </>

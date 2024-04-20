@@ -58,13 +58,7 @@ const StyledProductImg = styled('img')({
     objectFit: 'contain',
     position: 'absolute'
 });
-const defaultProps = {
-    center: {
-        lat: 21.0277644,
-        lng: 105.8341598
-    },
-    zoom: 11
-};
+
 const ViewProduct = () => {
     const theme = useTheme();
     const [productData, setProductData] = useState({});
@@ -82,8 +76,10 @@ const ViewProduct = () => {
     const [favoriteIcon, setFavoriteIcon] = useState(false);
 
     useEffect(() => {
-        findCurrentUser();
-    }, [currentUser]);
+        if (currentUser && currentUser.email) {
+            findCurrentUser();
+        }
+    }, [currentUser.email]);
     const findCurrentUser = async () => {
         try {
             const q = query(collection(firestore, 'users'), where('email', '==', currentUser.email));
@@ -173,7 +169,7 @@ const ViewProduct = () => {
             docRefs.forEach((product) => {
                 const data = product.data();
                 if (data.emailUser === dataUser.email && product.id !== params.id) {
-                    if (data.status === 'success') {
+                    if (data.status === 'active') {
                         res.push({
                             ...data,
                             id: product.id
@@ -181,12 +177,13 @@ const ViewProduct = () => {
                     }
                 }
             });
+            const limitedProducts = res.slice(0, 4);
 
-            setProducts(res);
-            return res;
+            setProducts(limitedProducts);
+            return limitedProducts;
         } catch (error) {
             console.error('Error finding products by user:', error);
-            return <NotFoundView />;
+            return;
         }
     };
 
@@ -194,16 +191,22 @@ const ViewProduct = () => {
         findProductbyUser();
     }, [dataUser.email, params.id]);
 
-    // useEffect(() => {
-    //     // const positionObj = JSON.parse(productData.category);
-    //     // const position = `${positionObj[0].location}, ${positionObj[0].ward}, ${positionObj[0].district}, Hà Nội`;
-    //     const add = 'Hà Nội';
-    //     const getCoords = async () => {
-    //         const results = await geocodeByAddress('add');
-    //         console.log('Geocode results:', results);
-    //     };
-    //     getCoords();
-    // }, []);
+    useEffect(() => {
+        if (productData && productData.category) {
+            const getCoords = async () => {
+                try {
+                    const position = `${location}, ${ward}, ${district}, Hà Nội`;
+                    const results = await geocodeByAddress(`${position}`);
+                    const latLng = await getLatLng(results[0]);
+                    setCoords(latLng);
+                } catch (error) {
+                    console.error('Error finding map:', error);
+                    return;
+                }
+            };
+            getCoords();
+        }
+    }, [productData]);
 
     if (loading) {
         return (
@@ -561,23 +564,6 @@ const ViewProduct = () => {
                                         </Typography>
                                     </Grid>
                                 </Grid>
-                                <Typography variant="h4" component="h2" sx={{ mt: 3, mb: 2 }}>
-                                    Bản Đồ:
-                                </Typography>
-                                <Typography variant="body1" component="h2" sx={{ mt: 3, mb: 2 }}>
-                                    Địa chỉ: {location}, {ward}, {district}, Hà Nội
-                                </Typography>
-                                {/* <Map coords={coords} /> */}
-                                <div style={{ height: '50vh', width: '100%' }}>
-                                    <GoogleMapReact
-                                        bootstrapURLKeys={{ key: 'AIzaSyDI8b-PUgKUgj5rHdtgEHCwWjUXYJrqYhE' }}
-                                        defaultCenter={defaultProps.center}
-                                        defaultZoom={defaultProps.zoom}
-                                        center={defaultProps.center}
-                                    >
-                                        <AnyReactComponent lat={21.0277644} lng={105.8341598} text={<LocationOnIcon color="error" />} />
-                                    </GoogleMapReact>
-                                </div>
                             </CardContent>
                         </Stack>
                         <Stack
@@ -630,9 +616,6 @@ const ViewProduct = () => {
                                             {dataUser.name}
                                         </Typography>
                                         <Typography color="text.secondary" variant="body2" sx={{ textAlign: 'left' }}>
-                                            Vai trò: {dataUser.role}
-                                        </Typography>
-                                        <Typography color="text.secondary" variant="body2" sx={{ textAlign: 'left' }}>
                                             Số điện thoại: {dataUser.phone}
                                         </Typography>
                                     </Stack>
@@ -647,6 +630,40 @@ const ViewProduct = () => {
                                         </Button>
                                     )}
                                 </Stack>
+                            </CardContent>
+                        </Box>
+                        <Box
+                            component="form"
+                            sx={{
+                                marginTop: 2,
+                                boxShadow: 'rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px',
+                                borderRadius: 1,
+                                '& .MuiTextField-root': { mb: 4, width: '100%' }
+                            }}
+                            noValidate
+                            autoComplete="off"
+                        >
+                            <CardContent>
+                                <Typography variant="h4" component="h2" sx={{ mb: 2 }}>
+                                    Bản Đồ:
+                                </Typography>
+                                {/* <Map coords={coords} /> */}
+                                <div style={{ height: '50vh', width: '100%' }}>
+                                    <>
+                                        <GoogleMapReact
+                                            bootstrapURLKeys={{ key: process.env.REACT_APP_MAP_API }}
+                                            defaultCenter={coords}
+                                            defaultZoom={15}
+                                            center={coords}
+                                        >
+                                            <AnyReactComponent
+                                                lat={coords?.lat}
+                                                lng={coords?.lng}
+                                                text={<LocationOnIcon color="error" />}
+                                            />
+                                        </GoogleMapReact>
+                                    </>
+                                </div>
                             </CardContent>
                         </Box>
                         <Box

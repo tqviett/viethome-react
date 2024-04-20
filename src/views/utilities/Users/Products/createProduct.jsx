@@ -47,7 +47,7 @@ const INIT_DATA = {
     total: '',
     type: '',
     note: '',
-    status: 'Pending',
+    status: 'pending',
     category: [],
     description: '',
     images: [],
@@ -163,7 +163,6 @@ const CreateProduct = () => {
             !dataForm.total ||
             !dataForm.price ||
             !dataForm.area ||
-            !dataForm.note ||
             !dataForm.description ||
             !dataForm.category.every((category) => category.district && category.ward && category.location)
         ) {
@@ -346,7 +345,6 @@ const CreateProduct = () => {
                             />
 
                             <TextField
-                                required
                                 id="note"
                                 label="Ghi chú"
                                 multiline

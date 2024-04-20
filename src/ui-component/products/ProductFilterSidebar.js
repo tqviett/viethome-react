@@ -36,7 +36,8 @@ export const FILTER_TYPE_OPTIONS = [
 export const FILTER_PRICE_OPTIONS = [
     { value: 'below', label: 'Dưới 3tr' },
     { value: 'between', label: 'Từ 3tr-5tr' },
-    { value: 'above', label: 'Trên 5tr' }
+    { value: 'between2', label: 'từ 5tr-10tr' },
+    { value: 'above', label: 'Trên 10tr' }
 ];
 // ----------------------------------------------------------------------
 

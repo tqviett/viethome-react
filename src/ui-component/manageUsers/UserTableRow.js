@@ -16,7 +16,7 @@ import Iconify from '../../components/iconify';
 
 // ----------------------------------------------------------------------
 
-export default function UserTableRow({ id, name, avatar, email, role, password, phone, status, handleStatusChange }) {
+export default function UserTableRow({ id, name, avatar, email, role, phone, status, handleStatusChange }) {
     const [open, setOpen] = useState(null);
 
     const handleOpenMenu = (event) => {
@@ -45,8 +45,6 @@ export default function UserTableRow({ id, name, avatar, email, role, password, 
                 </TableCell>
 
                 <TableCell>{email}</TableCell>
-
-                <TableCell>{password}</TableCell>
 
                 <TableCell>{phone}</TableCell>
 
@@ -91,7 +89,6 @@ UserTableRow.propTypes = {
     avatar: PropTypes.any,
     email: PropTypes.any,
     handleClick: PropTypes.func,
-    password: PropTypes.any,
     phone: PropTypes.any,
     name: PropTypes.any,
     role: PropTypes.any,
