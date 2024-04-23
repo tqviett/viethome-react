@@ -7,7 +7,7 @@ import { Avatar, Box, Grid, Menu, MenuItem, Typography } from '@mui/material';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
-import SkeletonEarningCard from 'ui-component/cards/Skeleton/EarningCard';
+import SkeletonTro from 'ui-component/cards/Skeleton/Tro';
 
 // assets
 import EarningIcon from 'assets/images/icons/earning.svg';
@@ -17,19 +17,28 @@ import GetAppTwoToneIcon from '@mui/icons-material/GetAppOutlined';
 import FileCopyTwoToneIcon from '@mui/icons-material/FileCopyOutlined';
 import PictureAsPdfTwoToneIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import ArchiveTwoToneIcon from '@mui/icons-material/ArchiveOutlined';
+import { useEffect } from 'react';
+import { getDocs, collection } from 'firebase/firestore';
+import { firestore } from '../../../firebase';
+import { FIRESTORE } from '../../../constants';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
-    backgroundColor: theme.palette.secondary.dark,
+    backgroundColor: theme.palette.primary.dark,
     color: '#fff',
     overflow: 'hidden',
     position: 'relative',
+    '&>div': {
+        position: 'relative',
+        zIndex: 5
+    },
     '&:after': {
         content: '""',
         position: 'absolute',
         width: 210,
         height: 210,
-        background: theme.palette.secondary[800],
+        background: theme.palette.primary[800],
         borderRadius: '50%',
+        zIndex: 1,
         top: -85,
         right: -95,
         [theme.breakpoints.down('sm')]: {
@@ -40,9 +49,10 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
     '&:before': {
         content: '""',
         position: 'absolute',
+        zIndex: 1,
         width: 210,
         height: 210,
-        background: theme.palette.secondary[800],
+        background: theme.palette.primary[800],
         borderRadius: '50%',
         top: -125,
         right: -15,
@@ -56,7 +66,8 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ===========================|| DASHBOARD DEFAULT - EARNING CARD ||=========================== //
 
-const EarningCard = ({ isLoading }) => {
+const NhaTro = ({ isLoading }) => {
+    const [products, setProducts] = useState([]);
     const theme = useTheme();
 
     const [anchorEl, setAnchorEl] = useState(null);
@@ -68,11 +79,29 @@ const EarningCard = ({ isLoading }) => {
     const handleClose = () => {
         setAnchorEl(null);
     };
+    useEffect(() => {
+        findAll();
+    }, []);
+    const findAll = async () => {
+        const doc_refs = await getDocs(collection(firestore, FIRESTORE.PRODUCTS));
+        const res = [];
+
+        doc_refs.forEach((product) => {
+            const data = product.data();
+            if (data.type.value == 'phongTro') {
+                res.push({
+                    ...product.data(),
+                    id: product.id
+                });
+            }
+        });
+        setProducts(res);
+    };
 
     return (
         <>
             {isLoading ? (
-                <SkeletonEarningCard />
+                <SkeletonTro />
             ) : (
                 <CardWrapper border={false} content={false}>
                     <Box sx={{ p: 2.25 }}>
@@ -85,7 +114,8 @@ const EarningCard = ({ isLoading }) => {
                                             sx={{
                                                 ...theme.typography.commonAvatar,
                                                 ...theme.typography.largeAvatar,
-                                                backgroundColor: theme.palette.secondary[800],
+                                                backgroundColor: theme.palette.primary[800],
+                                                color: '#fff',
                                                 mt: 1
                                             }}
                                         >
@@ -97,10 +127,10 @@ const EarningCard = ({ isLoading }) => {
                                             variant="rounded"
                                             sx={{
                                                 ...theme.typography.commonAvatar,
-                                                ...theme.typography.mediumAvatar,
-                                                backgroundColor: theme.palette.secondary.dark,
-                                                color: theme.palette.secondary[200],
-                                                zIndex: 1
+                                                ...theme.typography.largeAvatar,
+                                                backgroundColor: theme.palette.primary[800],
+                                                color: '#fff',
+                                                mt: 1
                                             }}
                                             aria-controls="menu-earning-card"
                                             aria-haspopup="true"
@@ -125,12 +155,6 @@ const EarningCard = ({ isLoading }) => {
                                             }}
                                         >
                                             <MenuItem onClick={handleClose}>
-                                                <GetAppTwoToneIcon sx={{ mr: 1.75 }} /> Import Card
-                                            </MenuItem>
-                                            <MenuItem onClick={handleClose}>
-                                                <FileCopyTwoToneIcon sx={{ mr: 1.75 }} /> Copy Data
-                                            </MenuItem>
-                                            <MenuItem onClick={handleClose}>
                                                 <PictureAsPdfTwoToneIcon sx={{ mr: 1.75 }} /> Export
                                             </MenuItem>
                                             <MenuItem onClick={handleClose}>
@@ -144,16 +168,14 @@ const EarningCard = ({ isLoading }) => {
                                 <Grid container alignItems="center">
                                     <Grid item>
                                         <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>
-                                            $500.00
+                                            {products.length}
                                         </Typography>
                                     </Grid>
                                     <Grid item>
                                         <Avatar
                                             sx={{
                                                 cursor: 'pointer',
-                                                ...theme.typography.smallAvatar,
-                                                backgroundColor: theme.palette.secondary[200],
-                                                color: theme.palette.secondary.dark
+                                                ...theme.typography.smallAvatar
                                             }}
                                         >
                                             <ArrowUpwardIcon fontSize="inherit" sx={{ transform: 'rotate3d(1, 1, 1, 45deg)' }} />
@@ -165,11 +187,10 @@ const EarningCard = ({ isLoading }) => {
                                 <Typography
                                     sx={{
                                         fontSize: '1rem',
-                                        fontWeight: 500,
-                                        color: theme.palette.secondary[200]
+                                        fontWeight: 500
                                     }}
                                 >
-                                    Total Earning
+                                    Phòng trọ
                                 </Typography>
                             </Grid>
                         </Grid>
@@ -180,8 +201,8 @@ const EarningCard = ({ isLoading }) => {
     );
 };
 
-EarningCard.propTypes = {
+NhaTro.propTypes = {
     isLoading: PropTypes.bool
 };
 
-export default EarningCard;
+export default NhaTro;

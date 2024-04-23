@@ -1,5 +1,5 @@
 // assets
-import { IconListCheck, IconMoneybag, IconFiles, IconMessageDots, IconUsers } from '@tabler/icons';
+import { IconListCheck, IconMoneybag, IconFiles, IconMessageDots, IconUsers, IconDashboard } from '@tabler/icons';
 
 // constant
 const icons = {
@@ -7,7 +7,8 @@ const icons = {
     IconListCheck,
     IconMoneybag,
     IconMessageDots,
-    IconUsers
+    IconUsers,
+    IconDashboard
 };
 
 // ==============================|| UTILITIES MENU ITEMS ||============================== //
@@ -17,6 +18,14 @@ const management = {
     title: 'Quản lí',
     type: 'group',
     children: [
+        {
+            id: 'default',
+            title: 'Thống kê',
+            type: 'item',
+            url: '/admin/dashboard',
+            icon: icons.IconDashboard,
+            breadcrumbs: false
+        },
         {
             id: 'product',
             title: 'Quản lý tin rao',
