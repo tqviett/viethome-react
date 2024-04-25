@@ -19,7 +19,7 @@ const management = {
     type: 'group',
     children: [
         {
-            id: 'default',
+            id: 'dashboard',
             title: 'Thống kê',
             type: 'item',
             url: '/admin/dashboard',
@@ -27,7 +27,7 @@ const management = {
             breadcrumbs: false
         },
         {
-            id: 'product',
+            id: 'products',
             title: 'Quản lý tin rao',
             type: 'item',
             url: '/admin/ManageProducts',

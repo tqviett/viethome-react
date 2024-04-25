@@ -173,7 +173,7 @@ export default function ProductsPage() {
                                         />
                                     ))}
 
-                                    <TableEmptyRows height={77} emptyRows={emptyRows(page, rowsPerPage, products.length)} />
+                                    <TableEmptyRows height={96} emptyRows={emptyRows(page, rowsPerPage, products.length)} />
 
                                     {notFound && <TableNoData query={filterName} />}
                                 </TableBody>

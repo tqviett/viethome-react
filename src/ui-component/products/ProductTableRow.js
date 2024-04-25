@@ -115,7 +115,7 @@ export default function ProductTableRow({ id, name, description, images, price, 
                     </ImageList>
                 </TableCell>
 
-                <TableCell>{fTwoDigits(price)}</TableCell>
+                <TableCell sx={{ width: 100 }}>{fTwoDigits(price)}</TableCell>
 
                 <TableCell>{total}</TableCell>
 

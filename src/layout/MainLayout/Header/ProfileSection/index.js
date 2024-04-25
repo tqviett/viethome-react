@@ -38,7 +38,7 @@ import User1 from 'assets/images/users/user-round.svg';
 // assets
 import { IconLogout, IconSearch, IconSettings, IconUser, IconBuildingStore, IconHeart, IconMessage } from '@tabler/icons';
 import { AuthContext } from 'context/AuthContext';
-
+import { useLocation } from 'react-router-dom';
 // ==============================|| PROFILE MENU ||============================== //
 
 const ProfileSection = () => {
@@ -63,6 +63,20 @@ const ProfileSection = () => {
         localStorage.removeItem('accessToken', '');
         navigate('/login');
     };
+
+    const location = useLocation();
+    const [isAllowedPath, setIsAllowedPath] = useState(false);
+
+    useEffect(() => {
+        const allowedPaths = ['/user/favorites', '/profile', '/user/my-products', '/messages'];
+        setIsAllowedPath(allowedPaths.includes(location.pathname));
+    }, [location]);
+
+    useEffect(() => {
+        if (!isAllowedPath) {
+            setSelectedIndex(-1);
+        }
+    }, [isAllowedPath]);
 
     const handleClose = (event) => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -271,7 +285,7 @@ const ProfileSection = () => {
                                             </ListItemButton>
                                             <ListItemButton
                                                 sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                selected={selectedIndex === 3}
+                                                selected={selectedIndex === 4}
                                                 onClick={handleLogout}
                                             >
                                                 <ListItemIcon>

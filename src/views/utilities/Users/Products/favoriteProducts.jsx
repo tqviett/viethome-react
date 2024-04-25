@@ -167,42 +167,40 @@ export default function ProductsFavoritePage() {
 
             <Container>
                 <Card>
-                    <Scrollbar sx={{ maxHeight: '60vh' }}>
-                        <TableContainer sx={{ overflow: 'unset' }}>
-                            <Table sx={{ minWidth: 800 }}>
-                                <ProductTableHead
-                                    order={order}
-                                    orderBy={orderBy}
-                                    rowCount={products.length}
-                                    numSelected={selected.length}
-                                    onRequestSort={handleSort}
-                                    onSelectAllClick={handleSelectAllClick}
-                                    headLabel={[{ id: 'name', label: 'Tim đã lưu' }]}
-                                />
-                                <TableBody sx={{ overflow: 'auto' }}>
-                                    {dataFiltered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                                        <ProductFavorite
-                                            key={row.id}
-                                            name={row.name}
-                                            images={row.images}
-                                            price={row.price}
-                                            total={row.total}
-                                            area={row.area}
-                                            category={row.category}
-                                            id={row.id}
-                                            selected={selected.indexOf(row.name) !== -1}
-                                            handleClick={(event) => handleClick(event, row.name)}
-                                            handleRemoveFavorite={handleRemoveFavorite}
-                                        />
-                                    ))}
+                    <TableContainer sx={{ overflow: 'unset' }}>
+                        <Table sx={{ minWidth: 800, maxHeight: 190 }}>
+                            <ProductTableHead
+                                order={order}
+                                orderBy={orderBy}
+                                rowCount={products.length}
+                                numSelected={selected.length}
+                                onRequestSort={handleSort}
+                                onSelectAllClick={handleSelectAllClick}
+                                headLabel={[{ id: 'name', label: 'Tim đã lưu' }]}
+                            />
+                            <TableBody sx={{ overflow: 'auto' }}>
+                                {dataFiltered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
+                                    <ProductFavorite
+                                        key={row.id}
+                                        name={row.name}
+                                        images={row.images}
+                                        price={row.price}
+                                        total={row.total}
+                                        area={row.area}
+                                        category={row.category}
+                                        id={row.id}
+                                        selected={selected.indexOf(row.name) !== -1}
+                                        handleClick={(event) => handleClick(event, row.name)}
+                                        handleRemoveFavorite={handleRemoveFavorite}
+                                    />
+                                ))}
 
-                                    <TableEmptyRows height={77} emptyRows={emptyRows(page, rowsPerPage, products.length)} />
+                                <TableEmptyRows height={185} emptyRows={emptyRows(page, rowsPerPage, products.length)} />
 
-                                    {notFound && <TableNoData query={filterName} />}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Scrollbar>
+                                {notFound && <TableNoData query={filterName} />}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
 
                     <TablePagination
                         page={page}

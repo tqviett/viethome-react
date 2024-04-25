@@ -193,7 +193,6 @@ const TotalGrowthBarChart = ({ isLoading }) => {
             res.series.forEach((item) => {
                 item.data = new Array(12).fill(0);
             });
-            console.log(selectedValue);
 
             docRefs.forEach((product) => {
                 const data = product.data();
@@ -201,7 +200,6 @@ const TotalGrowthBarChart = ({ isLoading }) => {
                 const createdAt = new Date(parseInt(createdAtTimestamp));
                 const monthIndex = createdAt.getMonth();
                 const yearIndex = createdAt.getFullYear();
-                console.log('value', selectedValue);
                 if (selectedValue) {
                     if (monthIndex === selectedValue - 1 && yearIndex.toString() === converTime(selectedYear)) {
                         if (data.type.value === 'nhaTro') {
