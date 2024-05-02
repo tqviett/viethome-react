@@ -8,6 +8,9 @@ import Label from '../../components/label';
 import Iconify from '../../components/iconify';
 import CloseIcon from '@mui/icons-material/Close';
 
+import { firestore } from '../../firebase';
+import { getDocs, collection, query, where } from 'firebase/firestore';
+
 import { fTwoDigits } from 'utils/formatNumber';
 
 // ----------------------------------------------------------------------
@@ -25,6 +28,8 @@ export default function ProductTableRow({ id, name, description, images, price, 
     const [fullScreenImageIndex, setFullScreenImageIndex] = useState(null);
 
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    const [phoneUser, setPhoneUser] = useState([]);
 
     const [img, setImg] = useState([]);
     const handleOpenMenu = (event) => {
@@ -75,6 +80,24 @@ export default function ProductTableRow({ id, name, description, images, price, 
         handleCloseMenu();
     };
 
+    useEffect(() => {
+        findCurrentUser();
+    }, []);
+
+    const findCurrentUser = async () => {
+        try {
+            const q = query(collection(firestore, 'users'), where('email', '==', emailUser));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                setPhoneUser(data);
+            });
+        } catch (error) {
+            console.error('Error finding user:', error);
+        }
+    };
+    console.log(phoneUser);
+
     return (
         <>
             <TableRow hover tabIndex={-1} role="checkbox">
@@ -121,7 +144,10 @@ export default function ProductTableRow({ id, name, description, images, price, 
 
                 <TableCell>{type.label}</TableCell>
 
-                <TableCell>{emailUser}</TableCell>
+                <TableCell>
+                    {emailUser} <br />
+                    {phoneUser.phone}
+                </TableCell>
 
                 <TableCell>
                     <Label color={status === 'pending' ? 'warning' : status === 'banned' ? 'error' : 'success'}>{status}</Label>
